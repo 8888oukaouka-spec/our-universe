@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"/>
 <title>Our Universe ✦</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:#0a0a0a;display:flex;align-items:center;justify-content:center}
+  html,body{height:100%;width:100%;background:#0a0a0a;overflow:hidden}
   body{font-family:system-ui,-apple-system,sans-serif}
-  .phone{width:100%;max-width:390px;height:100dvh;max-height:780px;background:#0a0a0a;border-radius:40px;overflow:hidden;position:relative}
+  .phone{width:100%;height:100%;height:100dvh;background:#0a0a0a;overflow:hidden;position:relative}
   .stars{position:absolute;inset:0;pointer-events:none;z-index:0}
   .star{position:absolute;background:#fff;border-radius:50%}
   .screen{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;overflow:hidden}
   .page{display:none;flex-direction:column;flex:1;overflow:hidden}
   .page.active{display:flex}
   .fixed-top{flex-shrink:0;padding:0 20px;background:#0a0a0a;z-index:20}
-  .header{padding:52px 0 14px;display:flex;justify-content:space-between;align-items:flex-end}
+  .header{padding:max(52px,calc(44px + env(safe-area-inset-top))) 0 14px;display:flex;justify-content:space-between;align-items:flex-end}
   .header-sub{font-size:11px;font-weight:800;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:5px}
   .header-title{font-size:26px;font-weight:900;color:#fff;line-height:1.15;letter-spacing:-0.02em}
   .header-title span{color:#e8f04a}
@@ -28,7 +28,7 @@
   .cat.inactive{background:#1e1e30;color:rgba(255,255,255,0.45)}
   .cat.inactive:hover{background:#26263c;color:rgba(255,255,255,0.7)}
   .cat.active{color:#0a0a0a}
-  .scroll-area{flex:1;overflow-y:auto;padding:0 20px 100px;scrollbar-width:none}
+  .scroll-area{flex:1;overflow-y:auto;padding:0 20px calc(100px + env(safe-area-inset-bottom));scrollbar-width:none}
   .scroll-area::-webkit-scrollbar{display:none}
   .add-btn{width:100%;padding:16px 20px;background:#4040e0;border-radius:22px;border:none;display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:14px;transition:all 0.15s}
   .add-btn:active{transform:scale(0.98)}
@@ -49,7 +49,7 @@
   .del-btn.cancel-del{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6)}
   .delete-menu::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1e1e30}
   .card-stack{position:relative;width:100%;height:380px}
-  .polaroid{position:absolute;width:270px;left:50%;background:#f5f0e8;border-radius:20px;padding:12px 12px 44px;cursor:pointer;transition:transform 0.2s;user-select:none}
+  .polaroid{position:absolute;width:270px;left:50%;background:#f5f0e8;border-radius:20px;padding:12px 12px 44px;cursor:grab;user-select:none;touch-action:none}
   .polaroid:nth-child(1){transform:translateX(-50%) rotate(-4deg);z-index:1;top:20px}
   .polaroid:nth-child(2){transform:translateX(-46%) rotate(3deg);z-index:2;top:10px}
   .polaroid:nth-child(3){transform:translateX(-54%) rotate(-1.5deg);z-index:3;top:0}
@@ -69,10 +69,10 @@
   .grid-body{padding:10px 12px 12px}
   .grid-title{font-size:12px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:0.02em;margin-bottom:3px}
   .grid-date{font-size:10px;color:rgba(255,255,255,0.3);font-weight:600}
-  .nav{position:absolute;bottom:18px;left:16px;right:16px;background:#4040e0;border-radius:100px;display:flex;align-items:center;padding:5px;z-index:50;height:58px}
+  .nav{position:absolute;bottom:max(18px,env(safe-area-inset-bottom));left:16px;right:16px;background:#4040e0;border-radius:100px;display:flex;align-items:center;padding:5px;z-index:50;height:58px}
   .nav-btn{flex:1;height:100%;border:none;background:transparent;border-radius:100px;font-size:15px;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;color:#fff;padding:0;display:flex;align-items:center;justify-content:center;transition:background 0.18s,color 0.18s}
   .nav-btn.active{background:#e8f04a;color:#0a0a0a}
-  .modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:flex;align-items:center;justify-content:center;border-radius:40px;padding:20px}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
   .modal-sheet{border-radius:28px;width:100%;padding:20px;position:relative;background:#111120}
   .modal-close{position:absolute;top:16px;right:16px;width:30px;height:30px;background:rgba(255,255,255,0.08);border:none;border-radius:50%;color:rgba(255,255,255,0.7);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center}
   .modal-label{font-size:11px;font-weight:800;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px}
@@ -153,9 +153,9 @@
       <button class="nav-btn active" id="nav-home">Home</button>
       <button class="nav-btn" id="nav-mem">Memory</button>
     </div>
-    <div id="modal-container"></div>
   </div>
 </div>
+<div id="modal-container"></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -339,6 +339,56 @@ function renderMem(){
   });
 }
 
+function attachSwipe(f){
+  var stack=document.getElementById('cstack');
+  if(!stack)return;
+  var topCard=stack.querySelector('.polaroid:last-child');
+  if(!topCard)return;
+  var startX=0,startY=0,dragging=false,hasMoved=false;
+
+  function onStart(x,y){
+    startX=x;startY=y;dragging=true;hasMoved=false;
+    topCard.style.transition='none';
+  }
+  function onMove(x,y){
+    if(!dragging)return;
+    var dx=x-startX,dy=y-startY;
+    if(Math.abs(dx)>4||Math.abs(dy)>4)hasMoved=true;
+    topCard.style.transform='translateX('+dx+'px) translateY('+(dy*0.3)+'px) rotate('+(-1.5+dx*0.08)+'deg)';
+  }
+  function onEnd(x){
+    if(!dragging)return;
+    dragging=false;
+    var dx=x-startX;
+    if(Math.abs(dx)>80){
+      topCard.style.transition='transform 0.35s ease,opacity 0.35s ease';
+      topCard.style.transform='translateX('+(dx>0?500:-500)+'px) rotate('+(dx>0?25:-25)+'deg)';
+      topCard.style.opacity='0';
+      window._cardIdx=(window._cardIdx+1)%f.length;
+      setTimeout(renderMem,350);
+    } else {
+      topCard.style.transition='transform 0.3s ease';
+      topCard.style.transform='translateX(-54%) rotate(-1.5deg)';
+      if(!hasMoved){
+        var id=topCard.getAttribute('data-memid');
+        if(id)openMemDetail(id);
+      }
+    }
+  }
+
+  topCard.addEventListener('touchstart',function(e){e.preventDefault();onStart(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
+  topCard.addEventListener('touchmove',function(e){e.preventDefault();onMove(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
+  topCard.addEventListener('touchend',function(e){e.preventDefault();onEnd(e.changedTouches[0].clientX);},{passive:false});
+  topCard.addEventListener('mousedown',function(e){onStart(e.clientX,e.clientY);});
+  document.addEventListener('mousemove',function(e){if(dragging)onMove(e.clientX,e.clientY);});
+  document.addEventListener('mouseup',function(e){if(dragging)onEnd(e.clientX);});
+
+  var lpt=null;
+  topCard.addEventListener('touchstart',function(){lpt=setTimeout(function(){showMemDeleteConfirm(topCard,topCard.getAttribute('data-memid'));},600);},{passive:true});
+  topCard.addEventListener('touchend',function(){clearTimeout(lpt);},{passive:true});
+  topCard.addEventListener('touchmove',function(){clearTimeout(lpt);},{passive:true});
+}
+
 function showMemDeleteConfirm(el,id){
   // inject a dark overlay inside the card
   var existing=el.querySelector('.del-confirm-overlay');
@@ -473,54 +523,6 @@ function addItem(){
   if(!t)return;
   newItem({title:t,cat:newCat,done:false,photos:[],note:'',date:''});
   closeModal();
-}
-
-function bindCardSwipe(f){
-  var stack=document.getElementById('card-stack-el');
-  if(!stack)return;
-  var startX=0,startY=0,isDragging=false,moved=false;
-  var topCard=stack.querySelector('.polaroid:last-child');
-  if(!topCard)return;
-
-  function onStart(x,y){startX=x;startY=y;isDragging=true;moved=false;topCard.style.transition='none';}
-  function onMove(x,y){
-    if(!isDragging)return;
-    var dx=x-startX,dy=y-startY;
-    if(Math.abs(dx)>5)moved=true;
-    topCard.style.transform='translateX(calc(-54% + '+dx+'px)) rotate('+(-1.5+dx*0.05)+'deg)';
-  }
-  function onEnd(x){
-    if(!isDragging)return;
-    isDragging=false;
-    topCard.style.transition='transform 0.3s ease';
-    var dx=x-startX;
-    if(Math.abs(dx)>60){
-      var dir=dx>0?1:-1;
-      topCard.style.transform='translateX(calc(-54% + '+(dir*400)+'px)) rotate('+(dir*20)+'deg)';
-      setTimeout(function(){
-        window._cardIdx=((window._cardIdx||0)+1)%f.length;
-        renderMem();
-      },300);
-    } else {
-      topCard.style.transform='translateX(-54%) rotate(-1.5deg)';
-      if(!moved){
-        var id=topCard.getAttribute('data-memid');
-        if(id)openMemDetail(id);
-      }
-    }
-  }
-
-  topCard.addEventListener('touchstart',function(e){onStart(e.touches[0].clientX,e.touches[0].clientY);},{passive:true});
-  topCard.addEventListener('touchmove',function(e){onMove(e.touches[0].clientX,e.touches[0].clientY);},{passive:true});
-  topCard.addEventListener('touchend',function(e){onEnd(e.changedTouches[0].clientX);});
-  topCard.addEventListener('mousedown',function(e){onStart(e.clientX,e.clientY);e.preventDefault();});
-  window.addEventListener('mousemove',function(e){if(isDragging)onMove(e.clientX,e.clientY);});
-  window.addEventListener('mouseup',function(e){if(isDragging)onEnd(e.clientX);});
-
-  var longPressT=null;
-  topCard.addEventListener('touchstart',function(){longPressT=setTimeout(function(){var id=topCard.getAttribute('data-memid');showMemDeleteConfirm(topCard,id);},600);},{passive:true});
-  topCard.addEventListener('touchend',function(){clearTimeout(longPressT);});
-  topCard.addEventListener('touchmove',function(){clearTimeout(longPressT);},{passive:true});
 }
 
 function closeModal(){document.getElementById('modal-container').innerHTML='';}
