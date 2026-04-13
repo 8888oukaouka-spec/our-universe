@@ -109,8 +109,6 @@
 <div class="phone">
   <div class="stars" id="stars"></div>
   <div class="screen">
-
-    <!-- HOME -->
     <div class="page active" id="page-home">
       <div class="fixed-top">
         <div class="header">
@@ -122,7 +120,7 @@
       </div>
       <div class="cats-sticky"><div class="cats" id="home-cats"></div></div>
       <div class="scroll-area">
-        <button class="add-btn" onclick="openAddModal()">
+        <button class="add-btn" id="add-btn-el">
           <div class="add-icon">+</div>
           <span class="add-label">new idea</span>
         </button>
@@ -133,7 +131,6 @@
       </div>
     </div>
 
-    <!-- MEMORY -->
     <div class="page" id="page-memory">
       <div class="fixed-top">
         <div class="header">
@@ -141,7 +138,7 @@
             <div class="header-sub">our memories</div>
             <div class="header-title">done <span>together</span> ✦</div>
           </div>
-          <button class="mode-toggle" onclick="toggleMode()"><span id="mode-label">Board Mode</span></button>
+          <button class="mode-toggle" id="mode-toggle-btn"><span id="mode-label">Board Mode</span></button>
         </div>
       </div>
       <div class="cats-sticky"><div class="cats" id="mem-cats"></div></div>
@@ -149,17 +146,16 @@
     </div>
 
     <div class="nav">
-      <button class="nav-btn active" id="nav-home" onclick="switchPage('home')">Home</button>
-      <button class="nav-btn" id="nav-mem" onclick="switchPage('memory')">Memory</button>
+      <button class="nav-btn active" id="nav-home">Home</button>
+      <button class="nav-btn" id="nav-mem">Memory</button>
     </div>
     <div id="modal-container"></div>
   </div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, remove, push, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
 const firebaseConfig = {
   apiKey: "AIzaSyBK7lq8QTMHFhx-d2GekIR1u4WAR_sASvU",
   authDomain: "our-universe-7078d.firebaseapp.com",
@@ -170,9 +166,9 @@ const firebaseConfig = {
   appId: "1:790066125607:web:2c41a381f1b594351b6702"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const itemsRef = ref(db, 'items');
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const itemsRef = db.ref('items');
 
 const CC={Travel:'#5ee7ff',Food:'#ff9f4a',Fun:'#ff6eb4',Romance:'#bf94ff',Adventure:'#e8f04a',Other:'#ff5c5c'};
 const CHIP_ACTIVE={All:{bg:'#e8f04a',text:'#0a0a0a'},Travel:{bg:'#5ee7ff',text:'#0a0a0a'},Food:{bg:'#ff9f4a',text:'#0a0a0a'},Fun:{bg:'#ff6eb4',text:'#0a0a0a'},Romance:{bg:'#bf94ff',text:'#0a0a0a'},Adventure:{bg:'#e8f04a',text:'#0a0a0a'},Other:{bg:'#ff5c5c',text:'#0a0a0a'}};
@@ -185,238 +181,297 @@ let homeCat='All',memCat='All',memMode='card',newCat='Adventure',tempPhotos=[],o
 for(let i=0;i<80;i++){
   const s=document.createElement('div');s.className='star';
   const sz=Math.random()*1.8+0.4;
-  s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;opacity:${Math.random()*0.35+0.1}`;
+  s.style.cssText='width:'+sz+'px;height:'+sz+'px;top:'+(Math.random()*100)+'%;left:'+(Math.random()*100)+'%;opacity:'+(Math.random()*0.35+0.1);
   document.getElementById('stars').appendChild(s);
 }
 
-// live sync from Firebase
-onValue(itemsRef, (snapshot) => {
+// event listeners — no inline onclick
+document.getElementById('add-btn-el').addEventListener('click', openAddModal);
+document.getElementById('nav-home').addEventListener('click', function(){ switchPage('home'); });
+document.getElementById('nav-mem').addEventListener('click', function(){ switchPage('memory'); });
+document.getElementById('mode-toggle-btn').addEventListener('click', toggleMode);
+
+// Firebase live sync
+itemsRef.on('value', function(snapshot){
   const data = snapshot.val();
-  items = data ? Object.entries(data).map(([id,v])=>({...v,id})) : [];
+  items = data ? Object.keys(data).map(function(id){ return Object.assign({}, data[id], {id:id}); }) : [];
   document.getElementById('sync-dot').classList.remove('off');
   if(document.getElementById('page-home').classList.contains('active')) renderHome();
   else renderMem();
-}, (error) => {
+}, function(){
   document.getElementById('sync-dot').classList.add('off');
 });
 
 function saveItem(item){
-  const {id, ...data} = item;
-  set(ref(db, 'items/'+id), data);
+  const id = item.id;
+  const data = Object.assign({}, item);
+  delete data.id;
+  db.ref('items/'+id).set(data);
+}
+function removeItem(id){ db.ref('items/'+id).remove(); }
+function newItem(data){ itemsRef.push(data); }
+
+function chipHTML(c, active, fn){
+  if(active){
+    const col=CHIP_ACTIVE[c]||{bg:'#e8f04a',text:'#0a0a0a'};
+    return '<button class="cat active" style="background:'+col.bg+';color:'+col.text+'" data-cat="'+c+'" data-fn="'+fn+'">'+c+'</button>';
+  }
+  return '<button class="cat inactive" data-cat="'+c+'" data-fn="'+fn+'">'+c+'</button>';
 }
 
-function removeItem(id){
-  remove(ref(db, 'items/'+id));
+function bindCatClicks(containerId, handler){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.querySelectorAll('.cat').forEach(function(btn){
+    btn.addEventListener('click', function(){ handler(btn.getAttribute('data-cat')); });
+  });
 }
 
-function newItem(data){
-  push(itemsRef, data);
-}
-
-function chipHTML(c,active,fn){
-  if(active){const col=CHIP_ACTIVE[c]||{bg:'#e8f04a',text:'#0a0a0a'};return `<button class="cat active" style="background:${col.bg};color:${col.text}" onclick="${fn}">${c}</button>`;}
-  return `<button class="cat inactive" onclick="${fn}">${c}</button>`;
-}
-
-window.switchPage = function(p){
-  document.getElementById('page-home').classList.toggle('active',p==='home');
-  document.getElementById('page-memory').classList.toggle('active',p==='memory');
-  document.getElementById('nav-home').classList.toggle('active',p==='home');
-  document.getElementById('nav-mem').classList.toggle('active',p==='memory');
+function switchPage(p){
+  document.getElementById('page-home').classList.toggle('active', p==='home');
+  document.getElementById('page-memory').classList.toggle('active', p==='memory');
+  document.getElementById('nav-home').classList.toggle('active', p==='home');
+  document.getElementById('nav-mem').classList.toggle('active', p==='memory');
   openDeleteId=null;
   if(p==='memory') renderMem(); else renderHome();
-};
+}
 
 function renderHome(){
-  const f=homeCat==='All'?items:items.filter(x=>x.cat===homeCat);
-  const todo=f.filter(x=>!x.done),done=f.filter(x=>x.done);
-  document.getElementById('home-cats').innerHTML=CATS.map(c=>chipHTML(c,homeCat===c,`setHomeCat('${c}')`)).join('');
-  document.getElementById('list-todo').innerHTML=todo.length?todo.map(itemHTML).join(''):`<div style="text-align:center;padding:24px 0;font-size:12px;font-weight:800;color:rgba(255,255,255,0.18);text-transform:uppercase;letter-spacing:0.06em">no ideas yet ✦</div>`;
-  document.getElementById('list-done').innerHTML=done.map(itemHTML).join('');
-  document.getElementById('sec-done').style.display=done.length?'block':'none';
+  const f = homeCat==='All' ? items : items.filter(function(x){ return x.cat===homeCat; });
+  const todo = f.filter(function(x){ return !x.done; });
+  const done = f.filter(function(x){ return x.done; });
+  document.getElementById('home-cats').innerHTML = CATS.map(function(c){ return chipHTML(c, homeCat===c, 'setHomeCat'); }).join('');
+  bindCatClicks('home-cats', function(c){ homeCat=c; openDeleteId=null; renderHome(); });
+  document.getElementById('list-todo').innerHTML = todo.length ? todo.map(itemHTML).join('') : '<div style="text-align:center;padding:24px 0;font-size:12px;font-weight:800;color:rgba(255,255,255,0.18);text-transform:uppercase;letter-spacing:0.06em">no ideas yet ✦</div>';
+  document.getElementById('list-done').innerHTML = done.map(itemHTML).join('');
+  document.getElementById('sec-done').style.display = done.length ? 'block' : 'none';
+  bindItemEvents();
 }
 
 function itemHTML(item){
-  const c=CC[item.cat]||'#fff';
-  const isOpen=openDeleteId===item.id&&!item.done;
-  return `<div class="item-wrap" id="wrap-${item.id}">
-    ${isOpen?`<div class="delete-menu">
-      <button class="del-btn confirm" onclick="deleteItem('${item.id}')">Delete</button>
-      <button class="del-btn cancel-del" onclick="cancelDelete()">Cancel</button>
-    </div>`:''}
-    <div class="item ${item.done?'done':''}" id="item-${item.id}"
-      onpointerdown="${!item.done?`startHold('${item.id}',event)`:''}"
-      onpointerup="${!item.done?`endHold()`:''}"
-      onpointerleave="${!item.done?`endHold()`:''}"
-      oncontextmenu="return false">
-      <div class="checkbox ${item.done?'checked':''}" style="${item.done?`background:${c};border:none`:''}" onclick="onCheck('${item.id}')">
-        ${item.done?`<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
-      </div>
-      <span class="item-text" style="color:${item.done?'rgba(255,255,255,0.25)':'#fff'};${item.done?'text-decoration:line-through':''}">${item.title}</span>
-      <div class="item-cat-dot" style="background:${c}"></div>
-    </div>
-  </div>`;
+  const c = CC[item.cat]||'#fff';
+  const isOpen = openDeleteId===item.id && !item.done;
+  return '<div class="item-wrap" id="wrap-'+item.id+'">'
+    +(isOpen ? '<div class="delete-menu"><button class="del-btn confirm" data-id="'+item.id+'">Delete</button><button class="del-btn cancel-del">Cancel</button></div>' : '')
+    +'<div class="item'+(item.done?' done':'')+'" id="item-'+item.id+'">'
+    +'<div class="checkbox'+(item.done?' checked':'')+'" style="'+(item.done?'background:'+c+';border:none':'')+'" data-check="'+item.id+'">'
+    +(item.done?'<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>':'')
+    +'</div>'
+    +'<span class="item-text" style="color:'+(item.done?'rgba(255,255,255,0.25)':'#fff')+(item.done?';text-decoration:line-through':'')+'">'+(item.title||'')+'</span>'
+    +'<div class="item-cat-dot" style="background:'+c+'"></div>'
+    +'</div></div>';
 }
 
-window.startHold = function(id,e){
-  const el=document.getElementById('item-'+id);
-  if(el)el.classList.add('pressing');
-  holdTimer=setTimeout(()=>{openDeleteId=id;renderHome();},500);
-};
-window.endHold = function(){
+function bindItemEvents(){
+  // checkboxes
+  document.querySelectorAll('[data-check]').forEach(function(el){
+    el.addEventListener('click', function(){ onCheck(el.getAttribute('data-check')); });
+  });
+  // long press on todo items
+  document.querySelectorAll('#list-todo .item').forEach(function(el){
+    const id = el.id.replace('item-','');
+    el.addEventListener('pointerdown', function(){ startHold(id, el); });
+    el.addEventListener('pointerup', endHold);
+    el.addEventListener('pointerleave', endHold);
+    el.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  });
+  // delete confirm
+  document.querySelectorAll('.del-btn.confirm').forEach(function(btn){
+    btn.addEventListener('click', function(){ removeItem(btn.getAttribute('data-id')); openDeleteId=null; });
+  });
+  document.querySelectorAll('.del-btn.cancel-del').forEach(function(btn){
+    btn.addEventListener('click', function(){ openDeleteId=null; renderHome(); });
+  });
+}
+
+function startHold(id, el){
+  el.classList.add('pressing');
+  holdTimer = setTimeout(function(){ openDeleteId=id; renderHome(); }, 500);
+}
+function endHold(){
   clearTimeout(holdTimer);
-  document.querySelectorAll('.item.pressing').forEach(el=>el.classList.remove('pressing'));
-};
-window.cancelDelete = function(){openDeleteId=null;renderHome();};
-window.deleteItem = function(id){removeItem(id);openDeleteId=null;};
-window.setHomeCat = function(c){homeCat=c;openDeleteId=null;renderHome();};
-window.onCheck = function(id){
-  const item=items.find(x=>x.id===id);if(!item)return;
+  document.querySelectorAll('.item.pressing').forEach(function(el){ el.classList.remove('pressing'); });
+}
+
+function onCheck(id){
+  const item = items.find(function(x){ return x.id===id; });
+  if(!item) return;
   if(!item.done) openDoneModal(item);
-  else{ saveItem({...item,done:false}); }
-};
+  else saveItem(Object.assign({}, item, {done:false}));
+}
 
 function renderMem(){
-  const memories=items.filter(x=>x.done);
-  const f=memCat==='All'?memories:memories.filter(x=>x.cat===memCat);
-  document.getElementById('mem-cats').innerHTML=CATS.map(c=>chipHTML(c,memCat===c,`setMemCat('${c}')`)).join('');
-  document.getElementById('mode-label').textContent=memMode==='card'?'Board Mode':'Card Mode';
-  const scrollArea=document.getElementById('mem-scroll-area');
-  const va=document.getElementById('mem-view');
+  const memories = items.filter(function(x){ return x.done; });
+  const f = memCat==='All' ? memories : memories.filter(function(x){ return x.cat===memCat; });
+  document.getElementById('mem-cats').innerHTML = CATS.map(function(c){ return chipHTML(c, memCat===c, 'setMemCat'); }).join('');
+  bindCatClicks('mem-cats', function(c){ memCat=c; renderMem(); });
+  document.getElementById('mode-label').textContent = memMode==='card' ? 'Board Mode' : 'Card Mode';
+  const scrollArea = document.getElementById('mem-scroll-area');
+  const va = document.getElementById('mem-view');
   if(f.length===0){
     scrollArea.style.overflow='hidden';
     va.style.cssText='height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center';
-    va.innerHTML=`<div class="empty-state"><div class="empty-ic">✦</div><div class="empty-tx">No memories yet</div></div>`;
+    va.innerHTML='<div class="empty-state"><div class="empty-ic">✦</div><div class="empty-tx">No memories yet</div></div>';
     return;
   }
   if(memMode==='card'){
     scrollArea.style.overflow='hidden';
     va.style.cssText='height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:50px';
-    va.innerHTML=`<div class="card-stack">${f.slice(0,3).map(m=>`
-      <div class="polaroid" onclick="openMemDetail('${m.id}')">
-        <div class="polaroid-img">${m.photos&&m.photos[0]?`<img src="${m.photos[0]}"/>`:`${memEmoji(m.cat)}`}</div>
-        <div class="polaroid-title">${m.title}</div>
-        <div class="polaroid-date">${m.date||'2026'}</div>
-        <div class="polaroid-cat" style="background:${CC[m.cat]||'#fff'}">${m.cat}</div>
-      </div>`).join('')}</div>
-      <div class="stack-hint">${f.length} memories · tap to open</div>`;
+    va.innerHTML='<div class="card-stack">'+f.slice(0,3).map(function(m){
+      return '<div class="polaroid" data-memid="'+m.id+'">'
+        +'<div class="polaroid-img">'+(m.photos&&m.photos[0]?'<img src="'+m.photos[0]+'"/>':memEmoji(m.cat))+'</div>'
+        +'<div class="polaroid-title">'+(m.title||'')+'</div>'
+        +'<div class="polaroid-date">'+(m.date||'2026')+'</div>'
+        +'<div class="polaroid-cat" style="background:'+(CC[m.cat]||'#fff')+'">'+m.cat+'</div>'
+        +'</div>';
+    }).join('')+'</div>'
+    +'<div class="stack-hint">'+f.length+' memories · tap to open</div>';
   } else {
     scrollArea.style.overflow='auto';
     va.style.cssText='padding:4px 0 20px';
-    va.innerHTML=`<div class="grid-view">${f.map(m=>`
-      <div class="grid-card" onclick="openMemDetail('${m.id}')">
-        <div class="grid-img">${m.photos&&m.photos[0]?`<img src="${m.photos[0]}"/>`:`${memEmoji(m.cat)}`}</div>
-        <div class="grid-body"><div class="grid-title">${m.title}</div><div class="grid-date">${m.date||'2026'}</div></div>
-      </div>`).join('')}</div>`;
+    va.innerHTML='<div class="grid-view">'+f.map(function(m){
+      return '<div class="grid-card" data-memid="'+m.id+'">'
+        +'<div class="grid-img">'+(m.photos&&m.photos[0]?'<img src="'+m.photos[0]+'"/>':memEmoji(m.cat))+'</div>'
+        +'<div class="grid-body"><div class="grid-title">'+(m.title||'')+'</div><div class="grid-date">'+(m.date||'2026')+'</div></div>'
+        +'</div>';
+    }).join('')+'</div>';
   }
+  // bind memory card clicks
+  va.querySelectorAll('[data-memid]').forEach(function(el){
+    el.addEventListener('click', function(){ openMemDetail(el.getAttribute('data-memid')); });
+  });
 }
 
-function memEmoji(cat){return{Travel:'⛩️',Food:'🍣',Fun:'🎤',Romance:'🌉',Adventure:'🌌',Other:'✨'}[cat]||'✨';}
-window.toggleMode = function(){memMode=memMode==='card'?'grid':'card';renderMem();};
-window.setMemCat = function(c){memCat=c;renderMem();};
+function memEmoji(cat){ return {Travel:'⛩️',Food:'🍣',Fun:'🎤',Romance:'🌉',Adventure:'🌌',Other:'✨'}[cat]||'✨'; }
+function toggleMode(){ memMode = memMode==='card'?'grid':'card'; renderMem(); }
 
 function catPickerHTML(){
-  return Object.entries(CC).map(([c,col])=>`<div class="cpick ${newCat===c?'sel':''}" style="background:${col}" onclick="pickCat('${c}')">${c}</div>`).join('');
+  return Object.keys(CC).map(function(c){
+    return '<div class="cpick'+(newCat===c?' sel':'')+'" style="background:'+CC[c]+'" data-pickcat="'+c+'">'+c+'</div>';
+  }).join('');
+}
+
+function bindPickerClicks(){
+  document.querySelectorAll('[data-pickcat]').forEach(function(el){
+    el.addEventListener('click', function(){
+      newCat = el.getAttribute('data-pickcat');
+      document.querySelectorAll('[data-pickcat]').forEach(function(e){ e.classList.toggle('sel', e.getAttribute('data-pickcat')===newCat); });
+    });
+  });
 }
 
 function openAddModal(){
-  document.getElementById('modal-container').innerHTML=`
-    <div class="modal-overlay" id="mov">
-      <div class="modal-sheet">
-        <div class="drag-handle"></div>
-        <div class="modal-title">new dream ✦</div>
-        <input class="m3-input" id="ni" placeholder="what do you want to do together?"/>
-        <div class="cat-row" id="cat-picker">${catPickerHTML()}</div>
-        <div class="modal-btns">
-          <button class="btn-filled" onclick="addItem()">Add to list +</button>
-          <button class="btn-outlined" onclick="closeModal()">Cancel</button>
-        </div>
-      </div>
-    </div>`;
-  document.getElementById('ni').addEventListener('keydown',e=>{if(e.key==='Enter')addItem();});
-  document.getElementById('mov').addEventListener('click',e=>{if(e.target.id==='mov')closeModal();});
-  setTimeout(()=>document.getElementById('ni')?.focus(),50);
+  document.getElementById('modal-container').innerHTML =
+    '<div class="modal-overlay" id="mov">'
+    +'<div class="modal-sheet">'
+    +'<div class="drag-handle"></div>'
+    +'<div class="modal-title">new dream ✦</div>'
+    +'<input class="m3-input" id="ni" placeholder="what do you want to do together?"/>'
+    +'<div class="cat-row" id="cat-picker">'+catPickerHTML()+'</div>'
+    +'<div class="modal-btns">'
+    +'<button class="btn-filled" id="btn-add-item">Add to list +</button>'
+    +'<button class="btn-outlined" id="btn-cancel-add">Cancel</button>'
+    +'</div>'
+    +'</div></div>';
+  bindPickerClicks();
+  document.getElementById('btn-add-item').addEventListener('click', addItem);
+  document.getElementById('btn-cancel-add').addEventListener('click', closeModal);
+  document.getElementById('mov').addEventListener('click', function(e){ if(e.target.id==='mov') closeModal(); });
+  document.getElementById('ni').addEventListener('keydown', function(e){ if(e.key==='Enter') addItem(); });
+  setTimeout(function(){ var ni=document.getElementById('ni'); if(ni) ni.focus(); }, 50);
 }
 
 function openDoneModal(item){
   tempPhotos=[];
-  document.getElementById('modal-container').innerHTML=`
-    <div class="modal-overlay" id="mov">
-      <div class="modal-sheet" style="position:relative">
-        <button class="modal-close" onclick="closeModal()">✕</button>
-        <div class="modal-label">you did it! 🎉</div>
-        <div class="modal-item-name">${item.title}</div>
-        <div class="photo-grid" id="pgrid">${photoSlots()}</div>
-        <input class="m3-input" id="note-in" placeholder="write a memory note..."/>
-        <div class="modal-btns">
-          <button class="btn-filled pink" onclick="confirmDone('${item.id}')">We've done it!</button>
-          <button class="btn-outlined" onclick="closeModal()">Cancel</button>
-        </div>
-      </div>
-    </div>`;
-  document.getElementById('mov').addEventListener('click',e=>{if(e.target.id==='mov')closeModal();});
+  document.getElementById('modal-container').innerHTML =
+    '<div class="modal-overlay" id="mov">'
+    +'<div class="modal-sheet" style="position:relative">'
+    +'<button class="modal-close" id="btn-close-done">✕</button>'
+    +'<div class="modal-label">you did it! 🎉</div>'
+    +'<div class="modal-item-name">'+(item.title||'')+'</div>'
+    +'<div class="photo-grid" id="pgrid">'+photoSlots()+'</div>'
+    +'<input class="m3-input" id="note-in" placeholder="write a memory note..."/>'
+    +'<div class="modal-btns">'
+    +'<button class="btn-filled pink" id="btn-confirm-done">We\'ve done it!</button>'
+    +'<button class="btn-outlined" id="btn-cancel-done">Cancel</button>'
+    +'</div>'
+    +'</div></div>';
+  document.getElementById('btn-close-done').addEventListener('click', closeModal);
+  document.getElementById('btn-cancel-done').addEventListener('click', closeModal);
+  document.getElementById('btn-confirm-done').addEventListener('click', function(){ confirmDone(item.id); });
+  document.getElementById('mov').addEventListener('click', function(e){ if(e.target.id==='mov') closeModal(); });
+  bindPhotoSlots();
 }
 
-window.openMemDetail = function(id){
-  const m=items.find(x=>x.id===id);if(!m)return;
-  const c=CC[m.cat]||'#fff';
-  const photos=m.photos||[];
-  document.getElementById('modal-container').innerHTML=`
-    <div class="modal-overlay" id="mov">
-      <div class="modal-sheet" style="position:relative">
-        <button class="modal-close" onclick="closeModal()">✕</button>
-        <span class="mem-cat-badge" style="background:${c}">${m.cat}</span>
-        <div class="modal-title" style="margin-bottom:4px">${m.title}</div>
-        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);margin-bottom:14px;text-transform:uppercase;letter-spacing:0.08em">${m.date||'2026'}</div>
-        <div class="mem-photos">
-          ${photos.length>0
-            ? photos.map(p=>`<div class="mem-photo"><img src="${p}"/></div>`).join('')
-            : [memEmoji(m.cat),'📸','📸','📸'].map(e=>`<div class="mem-photo">${e}</div>`).join('')}
-        </div>
-        ${m.note?`<div class="mem-note">${m.note}</div>`:''}
-      </div>
-    </div>`;
-  document.getElementById('mov').addEventListener('click',e=>{if(e.target.id==='mov')closeModal();});
-};
+function openMemDetail(id){
+  const m = items.find(function(x){ return x.id===id; });
+  if(!m) return;
+  const c = CC[m.cat]||'#fff';
+  const photos = m.photos||[];
+  document.getElementById('modal-container').innerHTML =
+    '<div class="modal-overlay" id="mov">'
+    +'<div class="modal-sheet" style="position:relative">'
+    +'<button class="modal-close" id="btn-close-mem">✕</button>'
+    +'<span class="mem-cat-badge" style="background:'+c+'">'+m.cat+'</span>'
+    +'<div class="modal-title" style="margin-bottom:4px">'+(m.title||'')+'</div>'
+    +'<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);margin-bottom:14px;text-transform:uppercase;letter-spacing:0.08em">'+(m.date||'2026')+'</div>'
+    +'<div class="mem-photos">'
+    +(photos.length>0
+      ? photos.map(function(p){ return '<div class="mem-photo"><img src="'+p+'"/></div>'; }).join('')
+      : [memEmoji(m.cat),'📸','📸','📸'].map(function(e){ return '<div class="mem-photo">'+e+'</div>'; }).join(''))
+    +'</div>'
+    +(m.note?'<div class="mem-note">'+m.note+'</div>':'')
+    +'</div></div>';
+  document.getElementById('btn-close-mem').addEventListener('click', closeModal);
+  document.getElementById('mov').addEventListener('click', function(e){ if(e.target.id==='mov') closeModal(); });
+}
 
 function photoSlots(){
   let h='';
   for(let i=0;i<4;i++){
-    if(i<tempPhotos.length) h+=`<div class="photo-slot"><img src="${tempPhotos[i]}"/></div>`;
-    else if(i===tempPhotos.length) h+=`<label class="photo-slot"><input type="file" accept="image/*" style="display:none" onchange="handlePhoto(this,${i})"><div class="plus-ic">+</div></label>`;
-    else h+=`<div class="photo-slot"></div>`;
+    if(i<tempPhotos.length) h+='<div class="photo-slot"><img src="'+tempPhotos[i]+'"/></div>';
+    else if(i===tempPhotos.length) h+='<label class="photo-slot" data-photoidx="'+i+'"><input type="file" accept="image/*" style="display:none"/><div class="plus-ic">+</div></label>';
+    else h+='<div class="photo-slot"></div>';
   }
   return h;
 }
 
-window.handlePhoto = function(input,idx){
-  const file=input.files[0];if(!file)return;
-  const r=new FileReader();
-  r.onload=e=>{tempPhotos[idx]=e.target.result;document.getElementById('pgrid').innerHTML=photoSlots();};
-  r.readAsDataURL(file);
-};
+function bindPhotoSlots(){
+  document.querySelectorAll('[data-photoidx]').forEach(function(label){
+    const idx = parseInt(label.getAttribute('data-photoidx'));
+    const input = label.querySelector('input[type=file]');
+    if(input){
+      input.addEventListener('change', function(){
+        const file = input.files[0]; if(!file) return;
+        const r = new FileReader();
+        r.onload = function(e){
+          tempPhotos[idx] = e.target.result;
+          document.getElementById('pgrid').innerHTML = photoSlots();
+          bindPhotoSlots();
+        };
+        r.readAsDataURL(file);
+      });
+    }
+  });
+}
 
-window.confirmDone = function(id){
-  const item=items.find(x=>x.id===id);if(!item)return;
-  const note=document.getElementById('note-in')?.value||'';
-  const date=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  saveItem({...item, done:true, photos:[...tempPhotos], note, date});
+function confirmDone(id){
+  const item = items.find(function(x){ return x.id===id; }); if(!item) return;
+  const note = (document.getElementById('note-in')||{}).value||'';
+  const date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  saveItem(Object.assign({}, item, {done:true, photos:tempPhotos.slice(), note:note, date:date}));
   closeModal();
-};
+}
 
-window.pickCat = function(c){
-  newCat=c;
-  const p=document.getElementById('cat-picker');
-  if(p) p.innerHTML=catPickerHTML();
-};
-
-window.addItem = function(){
-  const t=document.getElementById('ni')?.value.trim();if(!t)return;
+function addItem(){
+  const ni = document.getElementById('ni');
+  const t = ni ? ni.value.trim() : '';
+  if(!t) return;
   newItem({title:t, cat:newCat, done:false, photos:[], note:'', date:''});
   closeModal();
-};
+}
 
-window.closeModal = function(){document.getElementById('modal-container').innerHTML='';};
+function closeModal(){ document.getElementById('modal-container').innerHTML=''; }
 </script>
 </body>
 </html>
