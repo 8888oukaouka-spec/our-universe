@@ -158,6 +158,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
 firebase.initializeApp({
   apiKey:"AIzaSyBK7lq8QTMHFhx-d2GekIR1u4WAR_sASvU",
   authDomain:"our-universe-7078d.firebaseapp.com",
@@ -465,6 +466,7 @@ function addItem(){
 }
 
 function closeModal(){document.getElementById('modal-container').innerHTML='';}
+}); // end DOMContentLoaded
 </script>
 </body>
 </html>
