@@ -279,7 +279,7 @@ function endHold(){
 function onCheck(id){
   var item=items.find(function(x){return x.id===id;});if(!item)return;
   if(!item.done) openDoneModal(item);
-  else saveItem(Object.assign({},item,{done:false}));
+  // done items cannot be unchecked — use long press to delete
 }
 
 function renderMem(){
