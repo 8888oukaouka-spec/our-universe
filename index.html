@@ -6,7 +6,7 @@
 <title>Our Universe ✦</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;width:100%;background:#0a0a0a;margin:0;padding:0;overflow:hidden}
+  html,body{height:100%;width:100%;background:#0a0a0a;overflow:hidden}
   body{font-family:system-ui,-apple-system,sans-serif}
   .phone{width:100%;height:100vh;height:100dvh;background:#0a0a0a;overflow:hidden;position:relative}
   .stars{position:absolute;inset:0;pointer-events:none;z-index:0}
@@ -26,7 +26,6 @@
   .cats::-webkit-scrollbar{display:none}
   .cat{flex-shrink:0;height:32px;padding:0 16px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;outline:none;border:none;display:inline-flex;align-items:center;transition:background 0.15s,color 0.15s}
   .cat.inactive{background:#1e1e30;color:rgba(255,255,255,0.45)}
-  .cat.inactive:hover{background:#26263c;color:rgba(255,255,255,0.7)}
   .cat.active{color:#0a0a0a}
   .scroll-area{flex:1;overflow-y:auto;padding:0 20px calc(100px + env(safe-area-inset-bottom));scrollbar-width:none}
   .scroll-area::-webkit-scrollbar{display:none}
@@ -53,7 +52,7 @@
   .polaroid:nth-child(1){transform:translateX(-50%) rotate(-4deg);z-index:1;top:20px}
   .polaroid:nth-child(2){transform:translateX(-46%) rotate(3deg);z-index:2;top:10px}
   .polaroid:nth-child(3){transform:translateX(-54%) rotate(-1.5deg);z-index:3;top:0}
-  .polaroid.pressing{opacity:0.75;transform:translateX(-54%) rotate(-1.5deg) scale(0.97)!important}
+  .polaroid.pressing{opacity:0.75}
   .polaroid-img{width:100%;aspect-ratio:1;border-radius:10px;background:#d8d0c0;display:flex;align-items:center;justify-content:center;font-size:44px;margin-bottom:10px;overflow:hidden}
   .polaroid-img img{width:100%;height:100%;object-fit:cover;border-radius:10px}
   .polaroid-title{font-size:14px;font-weight:900;color:#1a1208;text-transform:uppercase;letter-spacing:-0.01em;margin-bottom:2px}
@@ -63,7 +62,6 @@
   .grid-view{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .grid-card{background:#111120;border-radius:20px;overflow:hidden;cursor:pointer;transition:all 0.15s;user-select:none;position:relative}
   .grid-card.pressing{opacity:0.75;transform:scale(0.97)}
-  .grid-card:active{transform:scale(0.97)}
   .grid-img{width:100%;aspect-ratio:1;background:#161625;display:flex;align-items:center;justify-content:center;font-size:30px;overflow:hidden}
   .grid-img img{width:100%;height:100%;object-fit:cover}
   .grid-body{padding:10px 12px 12px}
@@ -169,14 +167,13 @@ firebase.initializeApp({
   messagingSenderId:"790066125607",
   appId:"1:790066125607:web:2c41a381f1b594351b6702"
 });
-const db = firebase.database();
-const itemsRef = db.ref('items');
+var db=firebase.database();
+var itemsRef=db.ref('items');
 
-const CC={Travel:'#5ee7ff',Food:'#ff9f4a',Fun:'#ff6eb4',Romance:'#bf94ff',Adventure:'#e8f04a',Other:'#ff5c5c'};
-const CHIP_ACTIVE={All:{bg:'#e8f04a',text:'#0a0a0a'},Travel:{bg:'#5ee7ff',text:'#0a0a0a'},Food:{bg:'#ff9f4a',text:'#0a0a0a'},Fun:{bg:'#ff6eb4',text:'#0a0a0a'},Romance:{bg:'#bf94ff',text:'#0a0a0a'},Adventure:{bg:'#e8f04a',text:'#0a0a0a'},Other:{bg:'#ff5c5c',text:'#0a0a0a'}};
-const CATS=['All','Travel','Food','Fun','Romance','Adventure'];
-
-let items=[],homeCat='All',memCat='All',memMode='card',newCat='Adventure',tempPhotos=[],openDeleteId=null,holdTimer=null;
+var CC={Travel:'#5ee7ff',Food:'#ff9f4a',Fun:'#ff6eb4',Romance:'#bf94ff',Adventure:'#e8f04a',Other:'#ff5c5c'};
+var CHIP_ACTIVE={All:{bg:'#e8f04a',text:'#0a0a0a'},Travel:{bg:'#5ee7ff',text:'#0a0a0a'},Food:{bg:'#ff9f4a',text:'#0a0a0a'},Fun:{bg:'#ff6eb4',text:'#0a0a0a'},Romance:{bg:'#bf94ff',text:'#0a0a0a'},Adventure:{bg:'#e8f04a',text:'#0a0a0a'},Other:{bg:'#ff5c5c',text:'#0a0a0a'}};
+var CATS=['All','Travel','Food','Fun','Romance','Adventure'];
+var items=[],homeCat='All',memCat='All',memMode='card',newCat='Adventure',tempPhotos=[],openDeleteId=null,holdTimer=null;
 
 for(var i=0;i<80;i++){
   var s=document.createElement('div');s.className='star';
@@ -249,7 +246,6 @@ function bindItemEvents(){
   document.querySelectorAll('[data-check]').forEach(function(el){
     el.addEventListener('click',function(){onCheck(el.getAttribute('data-check'));});
   });
-  // long press on ALL items (both todo and done)
   document.querySelectorAll('.item').forEach(function(el){
     var id=el.id.replace('item-','');
     el.addEventListener('pointerdown',function(){startHold(id,el);});
@@ -273,7 +269,6 @@ function endHold(){
   clearTimeout(holdTimer);
   document.querySelectorAll('.item.pressing').forEach(function(el){el.classList.remove('pressing');});
 }
-
 function onCheck(id){
   var item=items.find(function(x){return x.id===id;});if(!item)return;
   if(!item.done) openDoneModal(item);
@@ -316,7 +311,6 @@ function renderMem(){
         +'</div>';
     }).join('')+'</div>';
   }
-  // bind tap = open detail, long press = delete confirm overlay
   va.querySelectorAll('[data-memid]').forEach(function(el){
     var id=el.getAttribute('data-memid');
     var moved=false;
@@ -332,7 +326,7 @@ function renderMem(){
     el.addEventListener('pointerup',function(){
       clearTimeout(holdTimer);
       el.classList.remove('pressing');
-      if(!moved && !el.querySelector('.del-confirm-overlay')) openMemDetail(id);
+      if(!moved&&!el.querySelector('.del-confirm-overlay')) openMemDetail(id);
     });
     el.addEventListener('pointerleave',function(){clearTimeout(holdTimer);el.classList.remove('pressing');});
     el.addEventListener('contextmenu',function(e){e.preventDefault();});
@@ -340,19 +334,14 @@ function renderMem(){
 }
 
 function showMemDeleteConfirm(el,id){
-  // inject a dark overlay inside the card
   var existing=el.querySelector('.del-confirm-overlay');
   if(existing){existing.remove();return;}
   var ov=document.createElement('div');
   ov.className='del-confirm-overlay';
-  ov.innerHTML='<div class="del-confirm-title">delete memory?</div>'
-    +'<div class="del-confirm-btns">'
-    +'<button class="del-btn confirm" id="dco-yes">Delete</button>'
-    +'<button class="del-btn cancel-del" id="dco-no">Cancel</button>'
-    +'</div>';
+  ov.innerHTML='<div class="del-confirm-title">delete memory?</div><div class="del-confirm-btns"><button class="del-btn confirm" id="dco-yes">Delete</button><button class="del-btn cancel-del" id="dco-no">Cancel</button></div>';
   el.appendChild(ov);
-  el.querySelector('#dco-yes').addEventListener('click',function(e){e.stopPropagation();removeItem(id);});
-  el.querySelector('#dco-no').addEventListener('click',function(e){e.stopPropagation();ov.remove();});
+  ov.querySelector('#dco-yes').addEventListener('click',function(e){e.stopPropagation();removeItem(id);});
+  ov.querySelector('#dco-no').addEventListener('click',function(e){e.stopPropagation();ov.remove();});
 }
 
 function memEmoji(cat){return{Travel:'⛩️',Food:'🍣',Fun:'🎤',Romance:'🌉',Adventure:'🌌',Other:'✨'}[cat]||'✨';}
