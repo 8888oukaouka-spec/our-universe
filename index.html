@@ -238,7 +238,7 @@ function itemHTML(item){
     +(isOpen?'<div class="delete-menu"><button class="del-btn confirm" data-delid="'+item.id+'">Delete</button><button class="del-btn cancel-del">Cancel</button></div>':'')
     +'<div class="item'+(item.done?' done':'')+'" id="item-'+item.id+'">'
     +'<div class="checkbox'+(item.done?' checked':'')+'" style="'+(item.done?'background:'+c+';border:none':'')+'" data-check="'+item.id+'">'
-    +(item.done?'<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>':'')
+    +(item.done?'<svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="pointer-events:none"><path d="M2.5 7L5.5 10L11.5 4" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>':'')
     +'</div>'
     +'<span class="item-text" style="color:'+(item.done?'rgba(255,255,255,0.25)':'#fff')+(item.done?';text-decoration:line-through':'')+'">'+(item.title||'')+'</span>'
     +'<div class="item-cat-dot" style="background:'+c+'"></div>'
@@ -247,7 +247,9 @@ function itemHTML(item){
 
 function bindItemEvents(){
   document.querySelectorAll('[data-check]').forEach(function(el){
-    el.addEventListener('click',function(){onCheck(el.getAttribute('data-check'));});
+    el.addEventListener('click',function(e){e.stopPropagation();onCheck(el.getAttribute('data-check'));});
+    el.addEventListener('pointerdown',function(e){e.stopPropagation();});
+    el.addEventListener('pointerup',function(e){e.stopPropagation();});
   });
   // long press on ALL items (both todo and done)
   document.querySelectorAll('.item').forEach(function(el){
