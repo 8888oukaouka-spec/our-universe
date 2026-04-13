@@ -7,8 +7,8 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;width:100%;background:#0a0a0a;overflow:hidden}
-  body{font-family:system-ui,-apple-system,sans-serif}
-  .phone{width:100%;height:100%;height:100dvh;background:#0a0a0a;overflow:hidden;position:relative}
+  body{font-family:system-ui,-apple-system,sans-serif;display:block}
+  .phone{width:100%;height:100dvh;background:#0a0a0a;overflow:hidden;position:relative}
   .stars{position:absolute;inset:0;pointer-events:none;z-index:0}
   .star{position:absolute;background:#fff;border-radius:50%}
   .screen{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;overflow:hidden}
@@ -49,7 +49,7 @@
   .del-btn.cancel-del{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6)}
   .delete-menu::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1e1e30}
   .card-stack{position:relative;width:100%;height:380px}
-  .polaroid{position:absolute;width:270px;left:50%;background:#f5f0e8;border-radius:20px;padding:12px 12px 44px;cursor:grab;user-select:none;touch-action:none}
+  .polaroid{position:absolute;width:270px;left:50%;background:#f5f0e8;border-radius:20px;padding:12px 12px 44px;cursor:pointer;transition:transform 0.2s;user-select:none}
   .polaroid:nth-child(1){transform:translateX(-50%) rotate(-4deg);z-index:1;top:20px}
   .polaroid:nth-child(2){transform:translateX(-46%) rotate(3deg);z-index:2;top:10px}
   .polaroid:nth-child(3){transform:translateX(-54%) rotate(-1.5deg);z-index:3;top:0}
@@ -297,15 +297,20 @@ function renderMem(){
   if(memMode==='card'){
     scrollArea.style.overflow='hidden';
     va.style.cssText='height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:50px';
-    va.innerHTML='<div class="card-stack">'+f.slice(0,3).map(function(m){
-      return '<div class="polaroid" data-memid="'+m.id+'">'
+    if(typeof window._cardIdx==='undefined'||window._cardIdx>=f.length)window._cardIdx=0;
+    var visCards=[];
+    for(var k=0;k<Math.min(3,f.length);k++) visCards.push(f[(window._cardIdx+k)%f.length]);
+    va.innerHTML='<div class="card-stack" id="cstack">'+visCards.map(function(m,si){
+      var tf=si===0?'transform:translateX(-50%) rotate(-4deg);top:20px':si===1?'transform:translateX(-46%) rotate(3deg);top:10px':'transform:translateX(-54%) rotate(-1.5deg);top:0';
+      return '<div class="polaroid" data-memid="'+m.id+'" style="z-index:'+(si+1)+';'+tf+'">'
         +'<div class="polaroid-img">'+(m.photos&&m.photos[0]?'<img src="'+m.photos[0]+'"/>':memEmoji(m.cat))+'</div>'
         +'<div class="polaroid-title">'+(m.title||'')+'</div>'
         +'<div class="polaroid-date">'+(m.date||'2026')+'</div>'
         +'<div class="polaroid-cat" style="background:'+(CC[m.cat]||'#fff')+'">'+m.cat+'</div>'
         +'</div>';
     }).join('')+'</div>'
-    +'<div class="stack-hint">'+f.length+' memories · long press to delete</div>';
+    +'<div class="stack-hint">'+(window._cardIdx+1)+' / '+f.length+' · swipe to browse</div>';
+    attachSwipe(f);
   } else {
     scrollArea.style.overflow='auto';
     va.style.cssText='padding:4px 0 20px';
@@ -344,49 +349,45 @@ function attachSwipe(f){
   if(!stack)return;
   var topCard=stack.querySelector('.polaroid:last-child');
   if(!topCard)return;
-  var startX=0,startY=0,dragging=false,hasMoved=false;
+  var startX=0,startY=0,dragging=false,hasMoved=false,lpt=null;
 
   function onStart(x,y){
     startX=x;startY=y;dragging=true;hasMoved=false;
     topCard.style.transition='none';
+    lpt=setTimeout(function(){
+      if(!hasMoved){dragging=false;showMemDeleteConfirm(topCard,topCard.getAttribute('data-memid'));}
+    },600);
   }
   function onMove(x,y){
     if(!dragging)return;
     var dx=x-startX,dy=y-startY;
-    if(Math.abs(dx)>4||Math.abs(dy)>4)hasMoved=true;
-    topCard.style.transform='translateX('+dx+'px) translateY('+(dy*0.3)+'px) rotate('+(-1.5+dx*0.08)+'deg)';
+    if(Math.abs(dx)>6||Math.abs(dy)>6){hasMoved=true;clearTimeout(lpt);}
+    if(!hasMoved)return;
+    topCard.style.transform='translateX('+dx+'px) translateY('+(dy*0.25)+'px) rotate('+(-1.5+dx*0.07)+'deg)';
   }
   function onEnd(x){
     if(!dragging)return;
-    dragging=false;
+    dragging=false;clearTimeout(lpt);
     var dx=x-startX;
-    if(Math.abs(dx)>80){
-      topCard.style.transition='transform 0.35s ease,opacity 0.35s ease';
-      topCard.style.transform='translateX('+(dx>0?500:-500)+'px) rotate('+(dx>0?25:-25)+'deg)';
+    if(hasMoved&&Math.abs(dx)>70){
+      topCard.style.transition='transform 0.3s ease,opacity 0.3s ease';
+      topCard.style.transform='translateX('+(dx>0?600:-600)+'px) rotate('+(dx>0?30:-30)+'deg)';
       topCard.style.opacity='0';
       window._cardIdx=(window._cardIdx+1)%f.length;
-      setTimeout(renderMem,350);
+      setTimeout(renderMem,300);
     } else {
-      topCard.style.transition='transform 0.3s ease';
+      topCard.style.transition='transform 0.25s ease';
       topCard.style.transform='translateX(-54%) rotate(-1.5deg)';
-      if(!hasMoved){
-        var id=topCard.getAttribute('data-memid');
-        if(id)openMemDetail(id);
-      }
+      if(!hasMoved){var id=topCard.getAttribute('data-memid');if(id)openMemDetail(id);}
     }
   }
 
   topCard.addEventListener('touchstart',function(e){e.preventDefault();onStart(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
   topCard.addEventListener('touchmove',function(e){e.preventDefault();onMove(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
   topCard.addEventListener('touchend',function(e){e.preventDefault();onEnd(e.changedTouches[0].clientX);},{passive:false});
-  topCard.addEventListener('mousedown',function(e){onStart(e.clientX,e.clientY);});
+  topCard.addEventListener('mousedown',function(e){e.preventDefault();onStart(e.clientX,e.clientY);});
   document.addEventListener('mousemove',function(e){if(dragging)onMove(e.clientX,e.clientY);});
   document.addEventListener('mouseup',function(e){if(dragging)onEnd(e.clientX);});
-
-  var lpt=null;
-  topCard.addEventListener('touchstart',function(){lpt=setTimeout(function(){showMemDeleteConfirm(topCard,topCard.getAttribute('data-memid'));},600);},{passive:true});
-  topCard.addEventListener('touchend',function(){clearTimeout(lpt);},{passive:true});
-  topCard.addEventListener('touchmove',function(){clearTimeout(lpt);},{passive:true});
 }
 
 function showMemDeleteConfirm(el,id){
