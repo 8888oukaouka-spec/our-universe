@@ -107,6 +107,19 @@
   .sync-dot{width:7px;height:7px;border-radius:50%;background:#e8f04a;display:inline-block;margin-left:8px;vertical-align:middle;animation:pulse 2s infinite}
   .sync-dot.off{background:#ff5c5c;animation:none}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+  .login-screen{position:fixed;inset:0;background:#0a0a0a;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px}
+  .login-stars{position:absolute;inset:0;pointer-events:none}
+  .login-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center}
+  .login-title{font-size:32px;font-weight:900;color:#fff;letter-spacing:-0.02em;line-height:1.1;margin-bottom:8px}
+  .login-title span{color:#e8f04a}
+  .login-sub{font-size:13px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:60px}
+  .login-btn{display:flex;align-items:center;gap:12px;background:#fff;border:none;border-radius:50px;padding:14px 28px;font-size:15px;font-weight:800;color:#0a0a0a;cursor:pointer;transition:all 0.15s}
+  .login-btn:hover{background:#f0f0f0;transform:scale(1.02)}
+  .login-btn:active{transform:scale(0.98)}
+  .login-btn svg{width:20px;height:20px;flex-shrink:0}
+  .login-hint{font-size:11px;font-weight:700;color:rgba(255,255,255,0.2);text-transform:uppercase;letter-spacing:0.08em;margin-top:24px}
+  .login-error{font-size:12px;font-weight:700;color:#ff5c5c;margin-top:16px;display:none}
 </style>
 </head>
 <body>
@@ -159,6 +172,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script>
 firebase.initializeApp({
   apiKey:"AIzaSyBK7lq8QTMHFhx-d2GekIR1u4WAR_sASvU",
@@ -171,6 +185,45 @@ firebase.initializeApp({
 });
 const db = firebase.database();
 const itemsRef = db.ref('items');
+const auth = firebase.auth();
+
+// Allowed email addresses
+var ALLOWED_EMAILS = ['yinghuazhang8888@gmail.com'];
+
+// Add login stars
+for(var ls=0;ls<60;ls++){
+  var lst=document.createElement('div');lst.className='star';
+  var lsz=Math.random()*1.8+0.4;
+  lst.style.cssText='width:'+lsz+'px;height:'+lsz+'px;top:'+(Math.random()*100)+'%;left:'+(Math.random()*100)+'%;opacity:'+(Math.random()*0.35+0.1);
+  document.getElementById('login-stars').appendChild(lst);
+}
+
+// Google sign-in button
+document.getElementById('google-signin-btn').addEventListener('click',function(){
+  var provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(function(err){
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('login-error').textContent='Sign in failed. Please try again.';
+  });
+});
+
+// Auth state listener
+auth.onAuthStateChanged(function(user){
+  var loginScreen = document.getElementById('login-screen');
+  if(user && ALLOWED_EMAILS.indexOf(user.email) !== -1){
+    // Authorised — hide login screen
+    loginScreen.style.display='none';
+  } else if(user){
+    // Signed in but not allowed
+    auth.signOut();
+    loginScreen.style.display='flex';
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('login-error').textContent='Access denied. This app is private.';
+  } else {
+    // Not signed in
+    loginScreen.style.display='flex';
+  }
+});
 
 const CC={Travel:'#5ee7ff',Food:'#ff9f4a',Fun:'#ff6eb4',Romance:'#bf94ff',Adventure:'#e8f04a',Other:'#ff5c5c'};
 const CHIP_ACTIVE={All:{bg:'#e8f04a',text:'#0a0a0a'},Travel:{bg:'#5ee7ff',text:'#0a0a0a'},Food:{bg:'#ff9f4a',text:'#0a0a0a'},Fun:{bg:'#ff6eb4',text:'#0a0a0a'},Romance:{bg:'#bf94ff',text:'#0a0a0a'},Adventure:{bg:'#e8f04a',text:'#0a0a0a'},Other:{bg:'#ff5c5c',text:'#0a0a0a'}};
@@ -530,5 +583,25 @@ function addItem(){
 
 function closeModal(){document.getElementById('modal-container').innerHTML='';}
 </script>
+
+<div id="login-screen" class="login-screen">
+  <div class="login-stars" id="login-stars"></div>
+  <div class="login-content">
+    <div class="login-title">our<br><span>universe</span> ✦</div>
+    <div class="login-sub">a private space for two</div>
+    <button class="login-btn" id="google-signin-btn">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Sign in with Google
+    </button>
+    <div class="login-hint">only approved accounts can access</div>
+    <div class="login-error" id="login-error">Access denied. This app is private.</div>
+  </div>
+</div>
+
 </body>
 </html>
