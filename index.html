@@ -201,10 +201,16 @@ for(var ls=0;ls<60;ls++){
 // Google sign-in button
 document.getElementById('google-signin-btn').addEventListener('click',function(){
   var provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(function(err){
+  auth.signInWithRedirect(provider).catch(function(err){
     document.getElementById('login-error').style.display='block';
     document.getElementById('login-error').textContent='Sign in failed. Please try again.';
   });
+});
+
+// Handle redirect result when returning from Google
+auth.getRedirectResult().catch(function(err){
+  document.getElementById('login-error').style.display='block';
+  document.getElementById('login-error').textContent='Sign in failed. Please try again.';
 });
 
 // Auth state listener
