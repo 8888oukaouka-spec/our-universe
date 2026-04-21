@@ -242,7 +242,9 @@ googleBtn.addEventListener('click',function(e){
 auth.onAuthStateChanged(function(user){
   var ls = document.getElementById('login-screen');
   if(user){
-    if(ALLOWED.indexOf(user.email)!==-1){
+    var userEmailLower = user.email.toLowerCase();
+    var allowedLower = ALLOWED.map(function(e){return e.toLowerCase();});
+    if(allowedLower.indexOf(userEmailLower)!==-1){
       ls.style.display='none';
     } else {
       auth.signOut();
