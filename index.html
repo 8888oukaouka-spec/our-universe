@@ -203,8 +203,8 @@ body{font-family:'Manrope',system-ui,sans-serif}svg path,svg circle,svg rect,svg
           <div class="widget-header">
             <div class="widget-title">FOR<br>YOU</div>
           </div>
-          <div id="canvas-wrap" style="position:relative;margin:14px;border-radius:16px;overflow:hidden;background:#0e0e1a;height:220px;cursor:crosshair">
-            <canvas id="draw-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block"></canvas>
+          <div id="canvas-wrap" style="position:relative;margin:14px;border-radius:16px;overflow:hidden;background:#0e0e1a;height:220px;cursor:crosshair;touch-action:none">
+            <canvas id="draw-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none"></canvas>
             <div id="objects-layer" style="position:absolute;inset:0"></div>
           </div>
           <div class="canvas-toolbar">
@@ -487,25 +487,7 @@ var MAX_UNDO=20;
 var objects=[]; // {id,type,content,x,y,fontSize}
 var objIdCounter=0;
 
-function saveToUndoStack(){
-  undoStack.push({canvas:canvas.toDataURL(),objects:JSON.parse(JSON.stringify(objects))});
-  if(undoStack.length>MAX_UNDO) undoStack.shift();
-}
-
-function undo(){
-  if(undoStack.length===0) return;
-  var prev=undoStack.pop();
-  var img=new Image();
-  img.onload=function(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.drawImage(img,0,0,canvas.width,canvas.height);
-    scheduleSave();
-  };
-  img.src=prev.canvas;
-  objects=prev.objects||[];
-  renderObjects();
-  scheduleObjectsSave();
-}
+var applyingRemote=false; // flag to prevent echo loop
 
 function initCanvas(){
   var wrap=document.getElementById('canvas-wrap');
@@ -515,7 +497,28 @@ function initCanvas(){
   canvas.style.width=canvasW+'px';
   canvas.style.height='220px';
   wrap.style.height='220px';
-  loadCanvasFromDB();
+  // Listen to canvas changes in real-time (syncs both users)
+  canvasRef.on('value',function(snap){
+    var data=snap.val();
+    if(applyingRemote)return;
+    if(data){
+      var img=new Image();
+      img.onload=function(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      };
+      img.src=data;
+    } else {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+    }
+  });
+  // Listen to objects changes in real-time
+  db.ref('canvas_objects').on('value',function(snap){
+    if(applyingRemote)return;
+    var data=snap.val();
+    objects=data&&Array.isArray(data)?data:[];
+    renderObjects();
+  });
 }
 
 function getPos(e){
@@ -526,6 +529,41 @@ function getPos(e){
     return{x:(e.touches[0].clientX-rect.left)*scaleX,y:(e.touches[0].clientY-rect.top)*scaleY};
   }
   return{x:(e.clientX-rect.left)*scaleX,y:(e.clientY-rect.top)*scaleY};
+}
+
+// Shared undo: save state to Firebase undo stack before every action
+function saveToUndoStack(){
+  var state={canvas:canvas.toDataURL('image/png',0.5),objects:JSON.parse(JSON.stringify(objects)),ts:Date.now()};
+  db.ref('canvas_undo').once('value',function(snap){
+    var stack=snap.val()||[];
+    if(!Array.isArray(stack))stack=[];
+    stack.push(state);
+    if(stack.length>MAX_UNDO)stack=stack.slice(stack.length-MAX_UNDO);
+    db.ref('canvas_undo').set(stack);
+  });
+}
+
+function undo(){
+  db.ref('canvas_undo').once('value',function(snap){
+    var stack=snap.val()||[];
+    if(!Array.isArray(stack)||stack.length===0)return;
+    var prev=stack.pop();
+    db.ref('canvas_undo').set(stack);
+    // apply previous state
+    applyingRemote=true;
+    var img=new Image();
+    img.onload=function(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      // push to firebase so other user sees it
+      canvasRef.set(prev.canvas);
+      applyingRemote=false;
+    };
+    img.src=prev.canvas;
+    objects=prev.objects||[];
+    renderObjects();
+    db.ref('canvas_objects').set(objects.length>0?objects:null);
+  });
 }
 
 function startDraw(e){
@@ -560,22 +598,14 @@ function stopDraw(e){
 
 function scheduleSave(){
   clearTimeout(saveCanvasTimer);
-  saveCanvasTimer=setTimeout(saveCanvasToDB,1000);
+  saveCanvasTimer=setTimeout(saveCanvasToDB,800);
 }
 
 function saveCanvasToDB(){
+  applyingRemote=true;
   var dataURL=canvas.toDataURL('image/png',0.5);
-  canvasRef.set(dataURL);
-}
-
-function loadCanvasFromDB(){
-  canvasRef.once('value',function(snap){
-    var data=snap.val();
-    if(data){
-      var img=new Image();
-      img.onload=function(){ctx.drawImage(img,0,0,canvas.width,canvas.height);};
-      img.src=data;
-    }
+  canvasRef.set(dataURL,function(){
+    setTimeout(function(){applyingRemote=false;},500);
   });
 }
 
@@ -583,17 +613,19 @@ canvas.addEventListener('mousedown',startDraw);
 canvas.addEventListener('mousemove',draw);
 canvas.addEventListener('mouseup',stopDraw);
 canvas.addEventListener('mouseleave',stopDraw);
-canvas.addEventListener('touchstart',startDraw,{passive:false});
-canvas.addEventListener('touchmove',draw,{passive:false});
-canvas.addEventListener('touchend',stopDraw,{passive:false});
+canvas.addEventListener('touchstart',function(e){e.preventDefault();startDraw(e);},{passive:false});
+canvas.addEventListener('touchmove',function(e){e.preventDefault();draw(e);},{passive:false});
+canvas.addEventListener('touchend',function(e){e.preventDefault();stopDraw(e);},{passive:false});
 
 document.getElementById('canvas-clear-btn').onclick=function(){
   saveToUndoStack();
+  applyingRemote=true;
   ctx.clearRect(0,0,canvas.width,canvas.height);
   objects=[];
   renderObjects();
   canvasRef.set(null);
   db.ref('canvas_objects').set(null);
+  setTimeout(function(){applyingRemote=false;},500);
 };
 
 document.getElementById('tool-pen').onclick=function(){setTool('pen');};
@@ -666,8 +698,12 @@ function addEmojiToCanvas(){
 
 setTimeout(function(){
   initCanvas();
+  // show color picker since pen is default tool
   var cpr=document.getElementById('color-picker-row');
-  if(cpr)cpr.style.display='flex';
+  if(cpr){cpr.style.display='flex';}
+  // make sure pen button is active
+  var penBtn=document.getElementById('tool-pen');
+  if(penBtn){penBtn.classList.add('active');}
 },300);
 
 function scheduleObjectsSave(){
@@ -725,14 +761,7 @@ function makeDraggable(el,obj){
   document.addEventListener('mouseup',function(){if(dragging)onEnd();});
 }
 
-// Load saved objects from Firebase
-db.ref('canvas_objects').on('value',function(snap){
-  var data=snap.val();
-  if(data&&Array.isArray(data)){
-    objects=data;
-    renderObjects();
-  }
-});
+// canvas_objects listener moved into initCanvas for real-time sync
 
 // ── LIST PAGE ──
 function renderList(){
