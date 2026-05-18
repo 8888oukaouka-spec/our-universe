@@ -393,9 +393,7 @@ function doSignIn(){
     googleBtn.disabled=false;
   });
 }
-googleBtn.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();doSignIn();},{passive:false});
-googleBtn.addEventListener('touchstart',function(e){e.stopPropagation();},{passive:true});
-googleBtn.addEventListener('click',function(e){e.stopPropagation();if(!('ontouchstart' in window))doSignIn();});
+googleBtn.addEventListener('click',function(e){e.stopPropagation();doSignIn();});
 auth.onAuthStateChanged(function(user){
   var ls=document.getElementById('login-screen');
   if(user){
