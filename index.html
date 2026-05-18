@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"/>
 <title>Our Universe ✦</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;width:100%;background:#0e0e0e;overflow:hidden}
+@keyframes modal-pop{0%{opacity:0;transform:scale(0.9) translateY(20px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 body{font-family:'Manrope',system-ui,sans-serif}svg path,svg circle,svg rect,svg polyline,svg line,svg polygon{fill:none}
 #app{position:fixed;top:0;left:0;right:0;bottom:0;background:#0e0e0e;display:flex;flex-direction:column}
 .stars{position:absolute;inset:0;pointer-events:none;z-index:0}
@@ -46,15 +48,10 @@ body{font-family:'Manrope',system-ui,sans-serif}svg path,svg circle,svg rect,svg
 .widget-arrow:active{color:#fff;transform:scale(0.95)}
 
 /* FOR YOU widget */
-.for-you-widget{background:linear-gradient(160deg,#1a1a2e 0%,#16213e 50%,#1a1a2e 100%)}
-.canvas-wrap{position:relative;margin:14px;border-radius:16px;overflow:hidden;background:#0e0e1a;cursor:crosshair}
-.draw-canvas{display:block;width:100%;touch-action:none}
-.canvas-toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(255,255,255,0.05);border-radius:0 0 16px 16px;margin:0 14px 14px}
-.tool-btn{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all 0.15s;background:rgba(255,255,255,0.08);color:#fff}
-.tool-btn.active{background:linear-gradient(135deg,#c8f04a,#a8d020);color:#0e0e0e}
-.tool-btn:active{transform:scale(0.92)}
-.clear-btn{margin-left:auto;padding:6px 14px;border-radius:50px;border:none;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);font-size:11px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif;text-transform:uppercase;letter-spacing:0.06em}
-.clear-btn:active{background:rgba(255,80,80,0.3);color:#ff6b6b}
+.for-you-widget{border-radius:40px!important;overflow:hidden}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-family:'Material Symbols Outlined'}
+.color-dot{cursor:pointer;transition:transform 0.15s,border-color 0.15s}
+.color-dot:active{transform:scale(0.9)}
 
 /* BUCKET LIST widget items */
 .widget-list{padding:12px 18px 18px}
@@ -199,34 +196,47 @@ body{font-family:'Manrope',system-ui,sans-serif}svg path,svg circle,svg rect,svg
       </div>
       <div class="scroll-area">
         <!-- FOR YOU widget -->
-        <div class="widget for-you-widget" style="background:linear-gradient(145deg,rgba(200,240,74,0.35),rgba(77,64,255,0.2) 50%,rgba(255,73,219,0.15))">
-          <div class="widget-header">
-            <div class="widget-title">FOR<br>YOU</div>
-          </div>
-          <div id="canvas-wrap" style="position:relative;margin:14px;border-radius:16px;overflow:hidden;background:#0e0e1a;height:220px;cursor:crosshair;touch-action:none">
-            <canvas id="draw-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none"></canvas>
-            <div id="objects-layer" style="position:absolute;inset:0"></div>
-          </div>
-          <div class="canvas-toolbar">
-            <button class="tool-btn active" id="tool-pen" title="Pen" style="border-radius:50%!important;width:48px;height:48px;min-width:48px">
-              <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path fill="none" d="M12 20h9"/><path fill="none" d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            </button>
-            <div id="color-picker-row" style="display:none;align-items:center;gap:8px">
-              <button class="color-dot active-dot" data-color="#d9ff5c" style="background:#d9ff5c;border-radius:50%!important" title="Lime"></button>
-              <button class="color-dot" data-color="#4d40ff" style="background:#4d40ff;border-radius:50%!important" title="Purple"></button>
-              <button class="color-dot" data-color="#ff49db" style="background:#ff49db;border-radius:50%!important" title="Pink"></button>
+        <div class="widget for-you-widget" style="background:linear-gradient(135deg,rgba(215,253,90,0.08) 0%,rgba(99,92,255,0.08) 100%);border:1px solid rgba(255,255,255,0.1);border-radius:40px;padding:0;overflow:hidden;position:relative;min-height:480px;display:flex;flex-direction:column;margin-bottom:14px">
+          <!-- Canvas -->
+          <canvas id="draw-canvas" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;z-index:1;cursor:crosshair"></canvas>
+          <!-- Objects Layer -->
+          <div id="objects-layer" style="position:absolute;inset:0;z-index:2;pointer-events:none"></div>
+          <!-- Purple glow -->
+          <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:rgba(99,92,255,0.15);border-radius:50%;filter:blur(60px);pointer-events:none;z-index:0"></div>
+          <!-- Header -->
+          <div style="position:relative;z-index:3;padding:24px 24px 0;display:flex;justify-content:space-between;align-items:flex-start">
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:900;color:rgba(255,255,255,0.15);line-height:1;letter-spacing:-0.02em;text-transform:uppercase;pointer-events:none">FOR<br>YOU</div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
+              <button id="canvas-clear-btn" style="padding:6px 16px;border-radius:100px;background:rgba(38,38,38,0.8);border:1px solid rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:11px;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:0.1em;font-family:'Manrope',sans-serif">CLEAR</button>
+              <button id="tool-undo" style="width:40px;height:40px;border-radius:50%;background:rgba(32,31,31,0.9);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);cursor:pointer;display:flex;align-items:center;justify-content:center">
+                <span class="material-symbols-outlined" style="font-size:20px">undo</span>
+              </button>
             </div>
-            <button class="tool-btn" id="tool-text" title="Text" style="border-radius:50%!important;width:48px;height:48px;min-width:48px">
-              <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline fill="none" points="4 7 4 4 20 4 20 7"/><line fill="none" x1="9" y1="20" x2="15" y2="20"/><line fill="none" x1="12" y1="4" x2="12" y2="20"/></svg>
+          </div>
+          <!-- Spacer -->
+          <div style="flex:1;min-height:200px"></div>
+          <!-- Trash bin -->
+          <div id="trash-bin" style="width:40px;height:40px;border-radius:50%;background:rgba(26,25,25,0.6);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.4);margin:0 auto 4px;opacity:0;transform:scale(0.8);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;position:relative;z-index:10">
+            <span class="material-symbols-outlined" style="font-size:20px">delete</span>
+          </div>
+          <!-- Color bar -->
+          <div id="color-bar" style="display:flex;align-items:center;gap:10px;background:rgba(44,44,44,0.9);backdrop-filter:blur(20px);padding:10px 20px;border-radius:100px;border:1px solid rgba(255,255,255,0.1);margin:0 auto 12px;position:relative;z-index:10">
+            <button class="color-dot" data-color="#d7fd5a" style="width:24px;height:24px;border-radius:50%;background:#d7fd5a;border:2px solid white;cursor:pointer"></button>
+            <button class="color-dot" data-color="#635cff" style="width:24px;height:24px;border-radius:50%;background:#635cff;border:2px solid transparent;cursor:pointer"></button>
+            <button class="color-dot" data-color="#ff6adc" style="width:24px;height:24px;border-radius:50%;background:#ff6adc;border:2px solid transparent;cursor:pointer"></button>
+            <button class="color-dot" data-color="#ffffff" style="width:24px;height:24px;border-radius:50%;background:#ffffff;border:2px solid transparent;cursor:pointer"></button>
+            <button class="color-dot" data-color="#ff6e84" style="width:24px;height:24px;border-radius:50%;background:#ff6e84;border:2px solid transparent;cursor:pointer"></button>
+          </div>
+          <!-- Toolbar -->
+          <div style="display:flex;align-items:center;background:rgba(44,44,44,0.8);backdrop-filter:blur(20px);padding:12px 24px;border-radius:100px;border:1px solid rgba(255,255,255,0.1);gap:24px;margin:0 auto 24px;position:relative;z-index:10">
+            <button id="tool-pen" style="width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#d7fd5a;color:#0e0e0e;transition:all 0.15s">
+              <span class="material-symbols-outlined" style="font-size:22px">edit</span>
             </button>
-            <button class="tool-btn" id="tool-emoji" title="Emoji" style="border-radius:50%!important;width:48px;height:48px;min-width:48px">
-              <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle fill="none" cx="12" cy="12" r="10"/><path fill="none" d="M8 13s1.5 2 4 2 4-2 4-2"/><line fill="none" x1="9" y1="9" x2="9.01" y2="9"/><line fill="none" x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            <button id="tool-text" style="width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:rgba(215,253,90,0.1);color:#d7fd5a;transition:all 0.15s">
+              <span class="material-symbols-outlined" style="font-size:22px">text_fields</span>
             </button>
-            <button class="tool-undo-btn" id="tool-undo" title="Undo" style="border-radius:50%!important;width:48px;height:48px;min-width:48px">
-              <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline fill="none" points="9 14 4 9 9 4"/><path fill="none" d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
-            </button>
-            <button class="clear-btn" id="canvas-clear-btn" title="Clear" style="border-radius:50%!important;width:48px;height:48px;min-width:48px;margin-left:auto">
-              <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="#ff49db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline fill="none" points="3 6 5 6 21 6"/><path fill="none" d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line fill="none" x1="10" y1="11" x2="10" y2="17"/><line fill="none" x1="14" y1="11" x2="14" y2="17"/></svg>
+            <button id="tool-emoji" style="width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:rgba(215,253,90,0.1);color:#d7fd5a;transition:all 0.15s">
+              <span class="material-symbols-outlined" style="font-size:22px">add_reaction</span>
             </button>
           </div>
         </div>
@@ -487,53 +497,53 @@ var MAX_UNDO=20;
 var objects=[]; // {id,type,content,x,y,fontSize}
 var objIdCounter=0;
 
-var applyingRemote=false; // flag to prevent echo loop
+var applyingRemote=false;
+var penColor='#d7fd5a';
+var boardObjects=[];
+var nextObjId=1;
+var undoStack2=[];
+var MAX_UNDO=20;
+var isDrawing=false,lastX=0,lastY=0,currentTool='pen';
+var saveCanvasTimer=null;
+var saveObjectsTimer=null;
 
 function initCanvas(){
-  var wrap=document.getElementById('canvas-wrap');
-  canvasW=wrap.offsetWidth;
-  canvas.width=canvasW;
-  canvas.height=220;
-  canvas.style.width=canvasW+'px';
-  canvas.style.height='220px';
-  wrap.style.height='220px';
-  // Listen to canvas changes in real-time (syncs both users)
+  var wrap=document.getElementById('draw-canvas').parentElement;
+  var w=wrap.offsetWidth;
+  var h=Math.max(480,wrap.offsetHeight);
+  var c=document.getElementById('draw-canvas');
+  c.width=w;c.height=h;
+  c.style.width=w+'px';c.style.height=h+'px';
+  // real-time canvas sync
   canvasRef.on('value',function(snap){
-    var data=snap.val();
     if(applyingRemote)return;
-    if(data){
-      var img=new Image();
-      img.onload=function(){
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.drawImage(img,0,0,canvas.width,canvas.height);
-      };
-      img.src=data;
-    } else {
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-    }
+    var data=snap.val();
+    var c=document.getElementById('draw-canvas');
+    var ctx=c.getContext('2d');
+    if(data){var img=new Image();img.onload=function(){ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);};img.src=data;}
+    else ctx.clearRect(0,0,c.width,c.height);
   });
-  // Listen to objects changes in real-time
+  // real-time objects sync
   db.ref('canvas_objects').on('value',function(snap){
     if(applyingRemote)return;
     var data=snap.val();
-    objects=data&&Array.isArray(data)?data:[];
+    boardObjects=data&&Array.isArray(data)?data:[];
     renderObjects();
   });
 }
 
 function getPos(e){
-  var rect=canvas.getBoundingClientRect();
-  var scaleX=canvas.width/rect.width;
-  var scaleY=canvas.height/rect.height;
-  if(e.touches){
-    return{x:(e.touches[0].clientX-rect.left)*scaleX,y:(e.touches[0].clientY-rect.top)*scaleY};
-  }
-  return{x:(e.clientX-rect.left)*scaleX,y:(e.clientY-rect.top)*scaleY};
+  var c=document.getElementById('draw-canvas');
+  var rect=c.getBoundingClientRect();
+  var scaleX=c.width/rect.width,scaleY=c.height/rect.height;
+  var cx=e.touches?e.touches[0].clientX:e.clientX;
+  var cy=e.touches?e.touches[0].clientY:e.clientY;
+  return{x:(cx-rect.left)*scaleX,y:(cy-rect.top)*scaleY};
 }
 
-// Shared undo: save state to Firebase undo stack before every action
 function saveToUndoStack(){
-  var state={canvas:canvas.toDataURL('image/png',0.5),objects:JSON.parse(JSON.stringify(objects)),ts:Date.now()};
+  var c=document.getElementById('draw-canvas');
+  var state={canvas:c.toDataURL('image/png',0.5),objects:JSON.parse(JSON.stringify(boardObjects)),ts:Date.now()};
   db.ref('canvas_undo').once('value',function(snap){
     var stack=snap.val()||[];
     if(!Array.isArray(stack))stack=[];
@@ -549,20 +559,20 @@ function undo(){
     if(!Array.isArray(stack)||stack.length===0)return;
     var prev=stack.pop();
     db.ref('canvas_undo').set(stack);
-    // apply previous state
     applyingRemote=true;
+    var c=document.getElementById('draw-canvas');
+    var ctx=c.getContext('2d');
     var img=new Image();
     img.onload=function(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      ctx.drawImage(img,0,0,canvas.width,canvas.height);
-      // push to firebase so other user sees it
+      ctx.clearRect(0,0,c.width,c.height);
+      ctx.drawImage(img,0,0,c.width,c.height);
       canvasRef.set(prev.canvas);
       applyingRemote=false;
     };
     img.src=prev.canvas;
-    objects=prev.objects||[];
+    boardObjects=prev.objects||[];
     renderObjects();
-    db.ref('canvas_objects').set(objects.length>0?objects:null);
+    db.ref('canvas_objects').set(boardObjects.length>0?boardObjects:null);
   });
 }
 
@@ -572,194 +582,230 @@ function startDraw(e){
   saveToUndoStack();
   isDrawing=true;
   var pos=getPos(e);lastX=pos.x;lastY=pos.y;
+  var c=document.getElementById('draw-canvas');
+  var ctx=c.getContext('2d');
   ctx.beginPath();ctx.moveTo(lastX,lastY);
 }
 function draw(e){
   if(!isDrawing||currentTool!=='pen')return;
   e.preventDefault();
+  var c=document.getElementById('draw-canvas');
+  var ctx=c.getContext('2d');
   var pos=getPos(e);
-  ctx.strokeStyle=penColor;
-  ctx.lineWidth=4;
-  ctx.lineCap='round';
-  ctx.lineJoin='round';
-  ctx.globalAlpha=1;
+  ctx.beginPath();ctx.moveTo(lastX,lastY);
   ctx.lineTo(pos.x,pos.y);
+  ctx.strokeStyle=penColor;ctx.lineWidth=4;ctx.lineCap='round';ctx.lineJoin='round';ctx.globalAlpha=1;
   ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(pos.x,pos.y);
   lastX=pos.x;lastY=pos.y;
   scheduleSave();
 }
-function stopDraw(e){
-  if(!isDrawing)return;
-  isDrawing=false;
-  scheduleSave();
-}
+function stopDraw(e){if(!isDrawing)return;isDrawing=false;scheduleSave();}
 
 function scheduleSave(){
   clearTimeout(saveCanvasTimer);
-  saveCanvasTimer=setTimeout(saveCanvasToDB,800);
-}
-
-function saveCanvasToDB(){
-  applyingRemote=true;
-  var dataURL=canvas.toDataURL('image/png',0.5);
-  canvasRef.set(dataURL,function(){
-    setTimeout(function(){applyingRemote=false;},500);
-  });
-}
-
-canvas.addEventListener('mousedown',startDraw);
-canvas.addEventListener('mousemove',draw);
-canvas.addEventListener('mouseup',stopDraw);
-canvas.addEventListener('mouseleave',stopDraw);
-canvas.addEventListener('touchstart',function(e){e.preventDefault();startDraw(e);},{passive:false});
-canvas.addEventListener('touchmove',function(e){e.preventDefault();draw(e);},{passive:false});
-canvas.addEventListener('touchend',function(e){e.preventDefault();stopDraw(e);},{passive:false});
-
-document.getElementById('canvas-clear-btn').onclick=function(){
-  saveToUndoStack();
-  applyingRemote=true;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  objects=[];
-  renderObjects();
-  canvasRef.set(null);
-  db.ref('canvas_objects').set(null);
-  setTimeout(function(){applyingRemote=false;},500);
-};
-
-document.getElementById('tool-pen').onclick=function(){setTool('pen');};
-document.getElementById('tool-text').onclick=function(){setTool('text');addTextToCanvas();};
-document.getElementById('tool-emoji').onclick=function(){setTool('emoji');addEmojiToCanvas();};
-document.getElementById('tool-undo').onclick=function(){undo();};
-document.querySelectorAll('.color-dot').forEach(function(dot){
-  dot.onclick=function(){
-    penColor=dot.getAttribute('data-color');
-    document.querySelectorAll('.color-dot').forEach(function(d){d.classList.remove('active-dot');});
-    dot.classList.add('active-dot');
-    setTool('pen');
-  };
-});
-
-function setTool(t){
-  currentTool=t;
-  document.querySelectorAll('.tool-btn').forEach(function(b){b.classList.remove('active');});
-  var activeBtn=document.getElementById('tool-'+t);
-  if(activeBtn&&activeBtn.classList.contains('tool-btn'))activeBtn.classList.add('active');
-  var cpr=document.getElementById('color-picker-row');
-  if(cpr) cpr.style.display=t==='pen'?'flex':'none';
-}
-
-function addTextToCanvas(){
-  var text=prompt('Type your message:');
-  if(!text)return;
-  saveToUndoStack();
-  var wrap=document.getElementById('canvas-wrap');
-  var obj={id:objIdCounter++,type:'text',content:text,x:wrap.offsetWidth/2-60,y:wrap.offsetHeight/2-16,fontSize:18};
-  objects.push(obj);
-  renderObjects();
-  scheduleObjectsSave();
-  setTool('pen');
-}
-
-function addEmojiToCanvas(){
-  var existing=document.getElementById('emoji-picker-pop');
-  if(existing){existing.remove();return;}
-  var emojis=['🩷','😍','🥰','😘','😊','😢','😭','😅','🤭','🫶','💫','✨','🌙','🌸','🎉','💌','🔥','🌈'];
-  var toolbarEl=document.querySelector('.canvas-toolbar');
-  var pop=document.createElement('div');
-  pop.id='emoji-picker-pop';
-  pop.style.cssText='position:absolute;bottom:calc(100% + 8px);left:0;right:0;background:#1e1e35;border-radius:16px;padding:12px;display:flex;flex-wrap:wrap;gap:8px;z-index:500;box-shadow:0 8px 32px rgba(0,0,0,0.6)';
-  pop.innerHTML=emojis.map(function(e){
-    return '<button data-emoji="'+e+'" style="width:42px;height:42px;border:none;background:rgba(255,255,255,0.06);border-radius:10px;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center">'+e+'</button>';
-  }).join('');
-  toolbarEl.style.position='relative';
-  toolbarEl.appendChild(pop);
-  pop.querySelectorAll('button').forEach(function(btn){
-    btn.addEventListener('click',function(e){
-      e.stopPropagation();
-      var emoji=btn.getAttribute('data-emoji');
-      saveToUndoStack();
-      var wrap=document.getElementById('canvas-wrap');
-      var obj={id:objIdCounter++,type:'emoji',content:emoji,x:wrap.offsetWidth/2-20,y:wrap.offsetHeight/2-20,fontSize:40};
-      objects.push(obj);
-      renderObjects();
-      scheduleObjectsSave();
-      pop.remove();
-      setTool('pen');
-    });
-  });
-  setTimeout(function(){
-    document.addEventListener('click',function closePop(e){
-      if(!pop.contains(e.target)&&e.target.id!=='tool-emoji'){pop.remove();document.removeEventListener('click',closePop);}
-    });
-  },100);
-}
-
-setTimeout(function(){
-  initCanvas();
-  // show color picker since pen is default tool
-  var cpr=document.getElementById('color-picker-row');
-  if(cpr){cpr.style.display='flex';}
-  // make sure pen button is active
-  var penBtn=document.getElementById('tool-pen');
-  if(penBtn){penBtn.classList.add('active');}
-},300);
-
-function scheduleObjectsSave(){
-  clearTimeout(saveObjectsTimer);
-  saveObjectsTimer=setTimeout(function(){
-    db.ref('canvas_objects').set(objects.length>0?objects:null);
+  saveCanvasTimer=setTimeout(function(){
+    var c=document.getElementById('draw-canvas');
+    applyingRemote=true;
+    canvasRef.set(c.toDataURL('image/png',0.5),function(){setTimeout(function(){applyingRemote=false;},500);});
   },800);
+}
+
+function addObject(type,content,color){
+  color=color||penColor;
+  saveToUndoStack();
+  var c=document.getElementById('draw-canvas');
+  var obj={id:nextObjId++,type:type,content:content,color:color,
+    x:Math.random()*(c.width-150)+50,y:Math.random()*(c.height-100)+50,
+    rotation:(Math.random()-0.5)*8};
+  boardObjects.push(obj);
+  renderObjects();
+  applyingRemote=true;
+  db.ref('canvas_objects').set(boardObjects,function(){setTimeout(function(){applyingRemote=false;},500);});
+}
+
+function getContrastColor(hex){
+  if(!hex||hex==='transparent')return'#ffffff';
+  var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return(0.299*r+0.587*g+0.114*b)/255>0.5?'#000000':'#ffffff';
 }
 
 function renderObjects(){
   var layer=document.getElementById('objects-layer');
   if(!layer)return;
   layer.innerHTML='';
-  objects.forEach(function(obj){
+  layer.style.pointerEvents='none';
+  boardObjects.forEach(function(obj){
     var el=document.createElement('div');
-    el.style.cssText='position:absolute;left:'+obj.x+'px;top:'+obj.y+'px;font-size:'+obj.fontSize+'px;cursor:grab;user-select:none;touch-action:none;line-height:1.2;'+(obj.type==='text'?'color:#fff;font-family:Plus Jakarta Sans,sans-serif;font-weight:700;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,0.8)':'');
-    el.textContent=obj.content;
+    el.style.cssText='position:absolute;touch-action:none;user-select:none;cursor:grab;pointer-events:auto;left:'+obj.x+'px;top:'+obj.y+'px';
     el.dataset.id=obj.id;
+    if(obj.type==='text'){
+      el.innerHTML='<div style="position:relative;padding:12px 20px;border-radius:16px;font-family:Plus Jakarta Sans,sans-serif;font-weight:900;font-size:16px;backdrop-filter:blur(10px);background:'+obj.color+';color:'+getContrastColor(obj.color)+';transform:rotate('+obj.rotation+'deg);box-shadow:0 0 20px '+obj.color+'44;white-space:nowrap">'+obj.content+'<div style="position:absolute;bottom:-8px;left:20px;width:16px;height:16px;background:'+obj.color+';clip-path:polygon(0 0,100% 0,0 100%)"></div></div>';
+    } else {
+      el.innerHTML='<div style="font-size:48px;transform:rotate('+obj.rotation+'deg);filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5))">'+obj.content+'</div>';
+    }
     makeDraggable(el,obj);
     layer.appendChild(el);
   });
 }
 
 function makeDraggable(el,obj){
-  var startX=0,startY=0,startObjX=0,startObjY=0,dragging=false,hasMoved=false;
-  function onStart(cx,cy){
-    dragging=true;hasMoved=false;
-    startX=cx;startY=cy;
-    startObjX=obj.x;startObjY=obj.y;
-    el.style.cursor='grabbing';
-    el.style.zIndex='10';
+  var startX=0,startY=0,moving=false;
+  var trash=document.getElementById('trash-bin');
+  function onStart(e){
+    moving=true;
+    var cx=e.touches?e.touches[0].clientX:e.clientX;
+    var cy=e.touches?e.touches[0].clientY:e.clientY;
+    startX=cx-obj.x;startY=cy-obj.y;
+    el.style.zIndex=1000;
+    if(trash){trash.style.opacity='1';trash.style.transform='scale(1)';trash.style.pointerEvents='auto';}
   }
-  function onMove(cx,cy){
-    if(!dragging)return;
-    var dx=cx-startX,dy=cy-startY;
-    if(Math.abs(dx)>3||Math.abs(dy)>3)hasMoved=true;
-    var wrap=document.getElementById('canvas-wrap');
-    obj.x=Math.max(0,Math.min(startObjX+dx,wrap.offsetWidth-el.offsetWidth));
-    obj.y=Math.max(0,Math.min(startObjY+dy,wrap.offsetHeight-el.offsetHeight));
-    el.style.left=obj.x+'px';
-    el.style.top=obj.y+'px';
+  function onMove(e){
+    if(!moving)return;
+    e.preventDefault();
+    var cx=e.touches?e.touches[0].clientX:e.clientX;
+    var cy=e.touches?e.touches[0].clientY:e.clientY;
+    obj.x=cx-startX;obj.y=cy-startY;
+    el.style.left=obj.x+'px';el.style.top=obj.y+'px';
+    if(trash){
+      var br=trash.getBoundingClientRect();
+      var over=cx>br.left&&cx<br.right&&cy>br.top&&cy<br.bottom;
+      trash.style.background=over?'rgba(215,110,132,0.3)':'rgba(26,25,25,0.6)';
+      trash.style.color=over?'#ff6e84':'rgba(255,255,255,0.4)';
+      trash.style.transform=over?'scale(1.15)':'scale(1)';
+    }
   }
-  function onEnd(){
-    if(!dragging)return;
-    dragging=false;
-    el.style.cursor='grab';
+  function onEnd(e){
+    if(!moving)return;
+    moving=false;
     el.style.zIndex='';
-    if(hasMoved)scheduleObjectsSave();
+    var cx=e.changedTouches?e.changedTouches[0].clientX:e.clientX;
+    var cy=e.changedTouches?e.changedTouches[0].clientY:e.clientY;
+    if(trash){
+      var br=trash.getBoundingClientRect();
+      if(cx>br.left&&cx<br.right&&cy>br.top&&cy<br.bottom){
+        boardObjects=boardObjects.filter(function(o){return o.id!==obj.id;});
+        renderObjects();
+        applyingRemote=true;
+        db.ref('canvas_objects').set(boardObjects.length>0?boardObjects:null,function(){setTimeout(function(){applyingRemote=false;},500);});
+      } else {
+        clearTimeout(saveObjectsTimer);
+        saveObjectsTimer=setTimeout(function(){
+          applyingRemote=true;
+          db.ref('canvas_objects').set(boardObjects,function(){setTimeout(function(){applyingRemote=false;},500);});
+        },600);
+      }
+      trash.style.opacity='0';trash.style.transform='scale(0.8)';trash.style.pointerEvents='none';
+      trash.style.background='rgba(26,25,25,0.6)';trash.style.color='rgba(255,255,255,0.4)';
+    }
   }
-  el.addEventListener('touchstart',function(e){e.preventDefault();onStart(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
-  el.addEventListener('touchmove',function(e){e.preventDefault();onMove(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
-  el.addEventListener('touchend',function(e){e.preventDefault();onEnd();},{passive:false});
-  el.addEventListener('mousedown',function(e){e.preventDefault();onStart(e.clientX,e.clientY);});
-  document.addEventListener('mousemove',function(e){if(dragging)onMove(e.clientX,e.clientY);});
-  document.addEventListener('mouseup',function(){if(dragging)onEnd();});
+  el.addEventListener('mousedown',onStart);
+  el.addEventListener('touchstart',onStart,{passive:false});
+  window.addEventListener('mousemove',onMove);
+  window.addEventListener('touchmove',onMove,{passive:false});
+  window.addEventListener('mouseup',onEnd);
+  window.addEventListener('touchend',onEnd);
 }
+
+// Tool bindings
+document.getElementById('tool-pen').onclick=function(){
+  currentTool='pen';
+  this.style.background='#d7fd5a';this.style.color='#0e0e0e';
+  document.getElementById('tool-text').style.background='rgba(215,253,90,0.1)';document.getElementById('tool-text').style.color='#d7fd5a';
+  document.getElementById('tool-emoji').style.background='rgba(215,253,90,0.1)';document.getElementById('tool-emoji').style.color='#d7fd5a';
+};
+
+document.getElementById('tool-text').onclick=function(){
+  currentTool='text';
+  this.style.background='#d7fd5a';this.style.color='#0e0e0e';
+  document.getElementById('tool-pen').style.background='rgba(215,253,90,0.1)';document.getElementById('tool-pen').style.color='#d7fd5a';
+  document.getElementById('tool-emoji').style.background='rgba(215,253,90,0.1)';document.getElementById('tool-emoji').style.color='#d7fd5a';
+  // show text modal
+  document.getElementById('modal-container').innerHTML=
+    '<div class="modal-overlay" id="mov" style="background:rgba(0,0,0,0.85);backdrop-filter:blur(12px)">'
+    +'<div style="background:rgba(26,25,25,0.95);border:1px solid rgba(255,255,255,0.1);border-radius:32px;padding:32px;width:100%;max-width:360px;animation:modal-pop 0.3s cubic-bezier(0.34,1.56,0.64,1)">'
+    +'<h2 style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:20px;text-align:center">Add Message</h2>'
+    +'<textarea id="text-modal-input" placeholder="TYPE HERE..." style="width:100%;background:rgba(0,0,0,0.4);border:none;border-radius:16px;padding:16px;color:#fff;font-family:Manrope,sans-serif;font-size:14px;resize:none;outline:none;text-align:center;margin-bottom:16px" rows="2"></textarea>'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:24px" id="text-modal-colors">'
+    +'<button data-tc="#d7fd5a" style="width:32px;height:32px;border-radius:50%;background:#d7fd5a;border:2px solid white;cursor:pointer"></button>'
+    +'<button data-tc="#635cff" style="width:32px;height:32px;border-radius:50%;background:#635cff;border:2px solid transparent;cursor:pointer"></button>'
+    +'<button data-tc="#ff6adc" style="width:32px;height:32px;border-radius:50%;background:#ff6adc;border:2px solid transparent;cursor:pointer"></button>'
+    +'<button data-tc="#ffffff" style="width:32px;height:32px;border-radius:50%;background:#ffffff;border:2px solid transparent;cursor:pointer"></button>'
+    +'<button data-tc="#ff6e84" style="width:32px;height:32px;border-radius:50%;background:#ff6e84;border:2px solid transparent;cursor:pointer"></button>'
+    +'</div>'
+    +'<div style="display:flex;gap:12px">'
+    +'<button id="text-modal-cancel" style="flex:1;padding:14px;border-radius:100px;border:1.5px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.6);font-family:Manrope,sans-serif;font-weight:900;font-size:12px;text-transform:uppercase;cursor:pointer">Cancel</button>'
+    +'<button id="text-modal-ok" style="flex:1;padding:14px;border-radius:100px;border:none;background:#d7fd5a;color:#0e0e0e;font-family:Manrope,sans-serif;font-weight:900;font-size:12px;text-transform:uppercase;cursor:pointer">Add</button>'
+    +'</div></div></div>';
+  var selColor='#d7fd5a';
+  document.querySelectorAll('[data-tc]').forEach(function(b){
+    b.onclick=function(){
+      selColor=b.getAttribute('data-tc');
+      document.querySelectorAll('[data-tc]').forEach(function(x){x.style.borderColor='transparent';});
+      b.style.borderColor='white';
+    };
+  });
+  document.getElementById('text-modal-cancel').onclick=closeModal;
+  document.getElementById('text-modal-ok').onclick=function(){
+    var val=document.getElementById('text-modal-input').value.trim();
+    if(val){addObject('text',val,selColor);closeModal();}
+  };
+  document.getElementById('mov').onclick=function(e){if(e.target.id==='mov')closeModal();};
+};
+
+document.getElementById('tool-emoji').onclick=function(){
+  currentTool='emoji';
+  this.style.background='#d7fd5a';this.style.color='#0e0e0e';
+  document.getElementById('tool-pen').style.background='rgba(215,253,90,0.1)';document.getElementById('tool-pen').style.color='#d7fd5a';
+  document.getElementById('tool-text').style.background='rgba(215,253,90,0.1)';document.getElementById('tool-text').style.color='#d7fd5a';
+  var emojis=['❤️','💖','😍','🥰','😘','😊','✨','💫','🌈','🔥','🎉','🌙','🌸','🫶'];
+  document.getElementById('modal-container').innerHTML=
+    '<div class="modal-overlay" id="mov" style="background:rgba(0,0,0,0.85);backdrop-filter:blur(12px)">'
+    +'<div style="background:rgba(26,25,25,0.95);border:1px solid rgba(255,255,255,0.1);border-radius:32px;padding:32px;width:100%;max-width:320px;text-align:center;animation:modal-pop 0.3s cubic-bezier(0.34,1.56,0.64,1)">'
+    +'<h2 style="font-family:Plus Jakarta Sans,sans-serif;font-size:20px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:20px">Pick an Emoji</h2>'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px" id="emoji-grid">'
+    +emojis.map(function(e){return '<button data-emoji="'+e+'" style="font-size:36px;background:rgba(255,255,255,0.05);border:none;border-radius:16px;padding:12px;cursor:pointer;transition:transform 0.15s">'+e+'</button>';}).join('')
+    +'</div>'
+    +'<button id="emoji-cancel" style="padding:12px 32px;border-radius:100px;border:1.5px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.6);font-family:Manrope,sans-serif;font-weight:900;font-size:12px;text-transform:uppercase;cursor:pointer">Cancel</button>'
+    +'</div></div>';
+  document.querySelectorAll('[data-emoji]').forEach(function(b){
+    b.onclick=function(){addObject('emoji',b.getAttribute('data-emoji'));closeModal();};
+  });
+  document.getElementById('emoji-cancel').onclick=closeModal;
+  document.getElementById('mov').onclick=function(e){if(e.target.id==='mov')closeModal();};
+};
+
+document.getElementById('tool-undo').onclick=function(){undo();};
+document.getElementById('canvas-clear-btn').onclick=function(){
+  saveToUndoStack();
+  applyingRemote=true;
+  var c=document.getElementById('draw-canvas');
+  c.getContext('2d').clearRect(0,0,c.width,c.height);
+  boardObjects=[];renderObjects();
+  canvasRef.set(null);
+  db.ref('canvas_objects').set(null);
+  setTimeout(function(){applyingRemote=false;},500);
+};
+
+// Color bar
+document.querySelectorAll('.color-dot').forEach(function(btn){
+  btn.onclick=function(){
+    penColor=btn.getAttribute('data-color');
+    currentTool='pen';
+    document.getElementById('tool-pen').style.background='#d7fd5a';document.getElementById('tool-pen').style.color='#0e0e0e';
+    document.querySelectorAll('.color-dot').forEach(function(b){b.style.borderColor='transparent';});
+    btn.style.borderColor='white';
+  };
+});
+
+// Canvas draw events
+var cvs=document.getElementById('draw-canvas');
+cvs.addEventListener('mousedown',startDraw);
+cvs.addEventListener('mousemove',draw);
+cvs.addEventListener('mouseup',stopDraw);
+cvs.addEventListener('mouseleave',stopDraw);
+cvs.addEventListener('touchstart',function(e){e.preventDefault();startDraw(e);},{passive:false});
+cvs.addEventListener('touchmove',function(e){e.preventDefault();draw(e);},{passive:false});
+cvs.addEventListener('touchend',function(e){e.preventDefault();stopDraw(e);},{passive:false});
 
 // canvas_objects listener moved into initCanvas for real-time sync
 
