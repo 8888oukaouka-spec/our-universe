@@ -93,29 +93,43 @@ svg path,svg circle,svg rect,svg polyline,svg line{fill:none}
 .tool-btn:active{transform:scale(0.92)}
 
 /* LIST PAGE */
-.page-header{padding:max(52px,calc(44px + env(safe-area-inset-top))) 24px 16px;background:#0e0e0e;flex-shrink:0}
-.page-title{font-size:28px;font-weight:900;color:#fff;line-height:1.15;letter-spacing:-0.02em}
+.page-header{padding:max(52px,calc(44px + env(safe-area-inset-top))) 24px 8px;background:#0e0e0e;flex-shrink:0}
+.page-title{font-size:42px;font-weight:900;color:#fff;line-height:1;letter-spacing:-0.03em;text-transform:uppercase;margin-bottom:16px}
 .page-title span{color:#d7fd5a}
-.page-sub{font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:5px}
-.cats-sticky{padding:10px 20px 12px;background:#0e0e0e;flex-shrink:0}
-.cats{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.page-sub{font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px}
+.cats-sticky{padding:8px 24px 12px;background:#0e0e0e;flex-shrink:0}
+.cats{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none}
 .cats::-webkit-scrollbar{display:none}
-.cat{flex-shrink:0;height:32px;padding:0 16px;border-radius:100px;font-size:12px;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;outline:none;border:none;display:inline-flex;align-items:center}
-.cat.inactive{background:rgba(38,38,38,1);color:rgba(173,170,170,1)}
-.cat.active{color:#0e0e0e}
-.add-btn{width:100%;padding:16px 20px;background:rgba(44,68,0,1);border-radius:100px;border:none;display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:14px;margin-top:4px;transition:all 0.15s}
-.add-btn:active{transform:scale(0.98)}
-.add-icon{width:30px;height:30px;background:#d7fd5a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#0e0e0e;flex-shrink:0}
-.add-label{font-size:14px;font-weight:900;color:#d7fd5a;text-transform:uppercase;letter-spacing:0.05em}
+.cat{flex-shrink:0;height:38px;padding:0 20px;border-radius:100px;font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;outline:none;border:none;display:inline-flex;align-items:center;transition:all 0.15s}
+.cat.inactive{background:rgba(32,31,31,1);color:rgba(173,170,170,1)}
+.cat.inactive:hover{background:rgba(38,38,38,1)}
+.cat.active{color:#0e0e0e;box-shadow:0 0 20px rgba(215,253,90,0.2)}
+.add-btn{width:100%;padding:18px 24px;background:#d7fd5a;border-radius:100px;border:none;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;margin-bottom:24px;margin-top:4px;transition:all 0.15s;box-shadow:0 10px 30px rgba(215,253,90,0.3)}
+.add-btn:active{transform:scale(0.97);box-shadow:0 5px 15px rgba(215,253,90,0.2)}
+.add-btn .material-symbols-outlined{font-size:24px;color:#0e0e0e;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+.add-label{font-size:16px;font-weight:900;color:#0e0e0e;text-transform:uppercase;letter-spacing:0.06em}
+.section-head{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.section-head-title{font-size:22px;font-weight:700;color:#fff;letter-spacing:-0.01em;white-space:nowrap}
+.section-head-title.done-title{opacity:0.6}
+.section-divider{height:2px;flex:1;background:linear-gradient(to right,rgba(73,72,71,0.4),transparent)}
 .section-label{font-size:11px;font-weight:800;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:0.1em;margin:16px 0 8px}
 .item-wrap{position:relative;margin-bottom:8px}
-.item{width:100%;padding:16px 20px;border-radius:100px;border:none;display:flex;align-items:center;gap:12px;text-align:left;background:rgba(32,31,31,0.4);border:1px solid rgba(255,255,255,0.05);cursor:default;user-select:none;transition:all 0.15s;backdrop-filter:blur(10px)}
-.item.done{background:rgba(255,255,255,0.03)}
-.item.pressing{transform:scale(0.97);opacity:0.7}
-.checkbox{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.18);cursor:pointer;transition:all 0.15s}
-.checkbox.checked{border:none}
-.item-text{font-size:15px;font-weight:700;letter-spacing:0.02em;flex:1;color:rgba(173,170,170,1)}
+.item{width:100%;padding:20px 20px;border-radius:16px;border:none;border-left:4px solid transparent;display:flex;align-items:center;gap:16px;text-align:left;background:rgba(19,19,19,1);cursor:default;user-select:none;transition:all 0.15s}
+.item:hover{background:rgba(26,25,25,1);border-left-color:#d7fd5a}
+.item.done{background:rgba(38,38,38,0.2);opacity:0.7;border-left:4px solid transparent}
+.item.pressing{transform:scale(0.98);opacity:0.7}
+.checkbox{width:32px;height:32px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1px solid rgba(73,72,71,1);background:rgba(38,38,38,1);cursor:pointer;transition:all 0.15s}
+.checkbox:hover{border-color:#d7fd5a}
+.checkbox.checked{border:none;background:rgba(99,92,255,0.2)}
+.checkbox .material-symbols-outlined{font-size:18px;color:#9492ff;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+.item-body{flex:1;min-width:0}
+.item-text{font-size:17px;font-weight:700;letter-spacing:0.02em;color:#fff;text-transform:uppercase;margin-bottom:4px}
+.item-text.done-text{color:rgba(173,170,170,1);text-decoration:line-through}
+.item-badges{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.item-badge{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;padding:2px 8px;border-radius:4px}
 .item-cat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.item-drag{font-size:20px;color:rgba(73,72,71,1);opacity:0;transition:opacity 0.15s;flex-shrink:0}
+.item:hover .item-drag{opacity:1}
 .delete-menu{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(32,31,31,0.95);border-radius:16px;border:1px solid rgba(255,255,255,0.08);padding:6px;display:flex;gap:6px;z-index:100;white-space:nowrap;backdrop-filter:blur(20px)}
 .del-btn{padding:10px 18px;border-radius:100px;font-size:12px;font-weight:900;text-transform:uppercase;cursor:pointer;border:none}
 .del-btn.confirm{background:#ff6e84;color:#fff}
@@ -267,18 +281,23 @@ svg path,svg circle,svg rect,svg polyline,svg line{fill:none}
     <!-- LIST PAGE -->
     <div class="page" id="page-list">
       <div class="page-header">
-        <div class="page-sub">our bucket list <span class="sync-dot"></span></div>
-        <div class="page-title">welcome to our <span>universe</span> ✦</div>
+        <div class="page-title">OUR BUCKET LIST</div>
       </div>
       <div class="cats-sticky"><div class="cats" id="home-cats"></div></div>
       <div class="scroll-area">
         <button class="add-btn" id="add-btn-el">
-          <div class="add-icon">+</div>
-          <span class="add-label">new idea</span>
+          <span class="material-symbols-outlined">add_circle</span>
+          <span class="add-label">NEW IDEA</span>
         </button>
-        <div class="section-label">to do</div>
+        <div class="section-head">
+          <div class="section-head-title">TO DO</div>
+          <div class="section-divider"></div>
+        </div>
         <div id="list-todo"></div>
-        <div class="section-label" id="sec-done" style="display:none">done ✓</div>
+        <div class="section-head" id="sec-done" style="display:none;margin-top:24px">
+          <div class="section-head-title done-title">DONE</div>
+          <div class="section-divider"></div>
+        </div>
         <div id="list-done"></div>
       </div>
     </div>
@@ -386,6 +405,28 @@ auth.onAuthStateChanged(function(user){
 
 // DATA
 var CC={Travel:'#5ee7ff',Food:'#ff9f4a',Fun:'#ff6eb4',Romance:'#bf94ff',Adventure:'#d7fd5a',Other:'#ff5c5c'};
+var customCats={};
+var catColorsPool=['#c084fc','#fb923c','#34d399','#f472b6','#60a5fa','#a78bfa','#fbbf24','#4ade80'];
+// Load custom categories from Firebase
+db.ref('settings/customCats').on('value',function(snap){
+  var data=snap.val();
+  if(data&&typeof data==='object'){
+    customCats=data;
+    // merge into CC
+    Object.keys(customCats).forEach(function(k){CC[k]=customCats[k];});
+  }
+});
+function saveCustomCat(name,color){
+  customCats[name]=color;
+  CC[name]=color;
+  db.ref('settings/customCats/'+name).set(color);
+}
+var customCats={};  // extra user-defined categories
+// load custom cats from Firebase
+db.ref('settings/customCats').on('value',function(snap){
+  customCats=snap.val()||{};
+});
+function allCC(){return Object.assign({},CC,customCats);}
 var CHIP_ACTIVE={All:{bg:'#d7fd5a',text:'#0e0e0e'},Travel:{bg:'#5ee7ff',text:'#0e0e0e'},Food:{bg:'#ff9f4a',text:'#0e0e0e'},Fun:{bg:'#ff6eb4',text:'#0e0e0e'},Romance:{bg:'#bf94ff',text:'#0e0e0e'},Adventure:{bg:'#d7fd5a',text:'#0e0e0e'},Other:{bg:'#ff5c5c',text:'#0e0e0e'}};
 var CATS=['All','Travel','Food','Fun','Romance','Adventure'];
 var items=[],homeCat='All',memCat='All',memMode='card',newCat='Adventure',tempPhotos=[],openDeleteId=null,holdTimer=null,curPage='home';
@@ -486,7 +527,7 @@ function bindCats(id,fn){
 function renderList(){
   var f=homeCat==='All'?items:items.filter(function(x){return x.cat===homeCat;});
   var todo=f.filter(function(x){return !x.done;}),done=f.filter(function(x){return x.done;});
-  document.getElementById('home-cats').innerHTML=CATS.map(function(c){return chipHTML(c,homeCat===c);}).join('');
+  document.getElementById('home-cats').innerHTML=['All'].concat(Object.keys(allCC())).map(function(c){return chipHTML(c,homeCat===c);}).join('');
   bindCats('home-cats',function(c){homeCat=c;openDeleteId=null;renderList();});
   document.getElementById('list-todo').innerHTML=todo.length?todo.map(itemHTML).join(''):'<div style="text-align:center;padding:24px 0;font-size:12px;font-weight:800;color:rgba(255,255,255,0.18);text-transform:uppercase">no ideas yet ✦</div>';
   document.getElementById('list-done').innerHTML=done.map(itemHTML).join('');
@@ -496,13 +537,29 @@ function renderList(){
 
 function itemHTML(item){
   var c=CC[item.cat]||'#fff',isOpen=openDeleteId===item.id;
+  var catColors={Travel:'rgba(94,231,255,0.15)',Food:'rgba(255,159,74,0.15)',Fun:'rgba(255,110,180,0.15)',Romance:'rgba(255,106,220,0.15)',Adventure:'rgba(215,253,90,0.15)',Other:'rgba(255,92,92,0.15)'};
+  var catTextColors={Travel:'#5ee7ff',Food:'#ff9f4a',Fun:'#ff6eb4',Romance:'#ff6adc',Adventure:'#d7fd5a',Other:'#ff5c5c'};
+  var bg=catColors[item.cat]||'rgba(255,255,255,0.1)';
+  var tc=catTextColors[item.cat]||'#fff';
   var h='<div class="item-wrap" id="wrap-'+item.id+'">';
   if(isOpen)h+='<div class="delete-menu"><button class="del-btn confirm" data-delid="'+item.id+'">Delete</button><button class="del-btn cancel-del">Cancel</button></div>';
   h+='<div class="item'+(item.done?' done':'')+'" id="item-'+item.id+'">';
-  h+='<div class="checkbox'+(item.done?' checked':'')+'" style="'+(item.done?'background:'+c+';border:none':'')+'" data-check="'+item.id+'">';
-  if(item.done)h+='<svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="#0e0e0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none"><path d="M2.5 7L5.5 10L11.5 4"/></svg>';
-  h+='</div><span class="item-text" style="color:'+(item.done?'rgba(255,255,255,0.25)':'rgba(173,170,170,1)')+(item.done?';text-decoration:line-through':'')+'">'+(item.title||'')+'</span>';
-  h+='<div class="item-cat-dot" style="background:'+c+'"></div></div></div>';
+  // checkbox
+  h+='<div class="checkbox'+(item.done?' checked':'')+'" data-check="'+item.id+'">';
+  if(item.done)h+='<span class="material-symbols-outlined" style="font-size:18px;color:#9492ff;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;pointer-events:none">check</span>';
+  h+='</div>';
+  // body
+  h+='<div class="item-body">';
+  h+='<div class="item-text'+(item.done?' done-text':'')+'">'+(item.title||'')+'</div>';
+  if(item.cat){
+    h+='<div class="item-badges">';
+    h+='<span class="item-badge" style="background:'+bg+';color:'+tc+'">'+item.cat+'</span>';
+    h+='</div>';
+  }
+  h+='</div>';
+  // drag indicator
+  h+='<span class="material-symbols-outlined item-drag">drag_indicator</span>';
+  h+='</div></div>';
   return h;
 }
 
@@ -802,21 +859,81 @@ setTimeout(initCanvas,300);
 
 // MODALS
 function catPickerHTML(){
-  return Object.keys(CC).map(function(c){return '<div class="cpick'+(newCat===c?' sel':'')+'" style="background:'+CC[c]+'" data-pickcat="'+c+'">'+c+'</div>';}).join('');
+  var all=allCC();
+  var chips=Object.keys(all).map(function(c){
+    return '<div class="cpick'+(newCat===c?' sel':'')+'" style="background:'+all[c]+'" data-pickcat="'+c+'">'+c+'</div>';
+  }).join('');
+  // + add category button
+  chips+='<div id="add-cat-btn" style="width:36px;height:34px;border-radius:100px;background:rgba(32,31,31,1);border:1px solid rgba(255,255,255,0.1);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all 0.15s">'
+    +'<span class="material-symbols-outlined" style="font-size:18px;color:rgba(173,170,170,1)">add</span>'
+    +'</div>';
+  return chips;
 }
 function bindPickerClicks(){
   document.querySelectorAll('[data-pickcat]').forEach(function(el){
-    el.onclick=function(){newCat=el.getAttribute('data-pickcat');document.querySelectorAll('[data-pickcat]').forEach(function(e){e.classList.toggle('sel',e.getAttribute('data-pickcat')===newCat);});};
+    el.onclick=function(){
+      newCat=el.getAttribute('data-pickcat');
+      document.querySelectorAll('[data-pickcat]').forEach(function(e){e.classList.toggle('sel',e.getAttribute('data-pickcat')===newCat);});
+    };
   });
+  var addCatBtn=document.getElementById('add-cat-btn');
+  if(addCatBtn) addCatBtn.onclick=function(e){e.stopPropagation();showAddCategoryInput();};
+}
+
+function showAddCategoryInput(){
+  var catRow=document.querySelector('.cat-row');
+  if(!catRow)return;
+  // remove existing input if any
+  var existing=document.getElementById('new-cat-input-row');
+  if(existing){existing.remove();return;}
+  var row=document.createElement('div');
+  row.id='new-cat-input-row';
+  row.style.cssText='display:flex;align-items:center;gap:8px;margin-top:10px;width:100%';
+  row.innerHTML=
+    '<input id="new-cat-name" placeholder="Category name..." style="flex:1;background:rgba(19,19,19,1);border:1px solid rgba(255,255,255,0.1);border-radius:100px;padding:10px 18px;color:#fff;font-family:Roboto Flex,sans-serif;font-size:13px;font-weight:700;outline:none"/>'
+    +'<button id="new-cat-save" style="padding:10px 20px;border-radius:100px;background:#d7fd5a;border:none;color:#0e0e0e;font-size:12px;font-weight:900;text-transform:uppercase;cursor:pointer;white-space:nowrap;letter-spacing:0.06em">Add</button>'
+    +'<button id="new-cat-cancel" style="padding:10px 16px;border-radius:100px;background:rgba(32,31,31,1);border:none;color:rgba(173,170,170,1);font-size:12px;font-weight:900;cursor:pointer">✕</button>';
+  catRow.after(row);
+  document.getElementById('new-cat-name').focus();
+
+  // pick a random accent color for the new category
+  var palette=['#a8edff','#ffcf7a','#ffaad4','#d4baff','#b5f7a0','#ffb3b3','#ffd6a5','#caffbf'];
+
+  document.getElementById('new-cat-save').onclick=function(){
+    var name=document.getElementById('new-cat-name').value.trim();
+    if(!name)return;
+    var color=palette[Math.floor(Math.random()*palette.length)];
+    customCats[name]=color;
+    db.ref('settings/customCats/'+name).set(color);
+    newCat=name;
+    row.remove();
+    // rebuild picker with new category included
+    var catRowEl=document.querySelector('.cat-row');
+    if(catRowEl){catRowEl.innerHTML=catPickerHTML();bindPickerClicks();}
+  };
+  document.getElementById('new-cat-cancel').onclick=function(){row.remove();};
+  document.getElementById('new-cat-name').onkeydown=function(e){
+    if(e.key==='Enter')document.getElementById('new-cat-save').click();
+    if(e.key==='Escape')row.remove();
+  };
 }
 function openAddModal(){
   document.getElementById('modal-container').innerHTML=
-    '<div class="modal-overlay" id="mov"><div class="modal-sheet"><div class="drag-handle"></div>'
-    +'<div class="modal-title">new dream ✦</div>'
-    +'<input class="m3-input" id="ni" placeholder="what do you want to do together?"/>'
+    '<div class="modal-overlay" id="mov" style="align-items:flex-end;padding:0">'
+    +'<div class="modal-sheet" style="border-radius:32px 32px 0 0;padding:32px 24px 40px;max-width:100%;width:100%">'
+    +'<div class="drag-handle"></div>'
+    +'<h2 style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-0.02em;text-transform:uppercase;margin-bottom:8px">NEW IDEA</h2>'
+    +'<p style="font-size:14px;color:rgba(173,170,170,1);margin-bottom:24px">Capture a new experience to share together.</p>'
+    +'<div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;color:rgba(215,253,90,0.8);margin-bottom:10px;padding:0 4px">CATEGORY</div>'
     +'<div class="cat-row">'+catPickerHTML()+'</div>'
-    +'<div class="modal-btns"><button class="btn-filled" id="btn-add-item">Add to list +</button><button class="btn-outlined" id="btn-cancel-add">Cancel</button></div>'
-    +'</div></div>';
+    +'<div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;color:rgba(215,253,90,0.8);margin-bottom:10px;padding:0 4px">IDEA</div>'
+    +'<div style="background:rgba(19,19,19,1);border-radius:100px;border:1px solid rgba(255,255,255,0.05);padding:4px">'
+    +'<input class="m3-input" id="ni" placeholder="What do you want to do together?" style="margin:0;border-radius:100px;padding:16px 24px"/>'
+    +'</div>'
+    +'<div style="margin-top:24px;display:flex;flex-direction:column;gap:12px">'
+    +'<button class="btn-filled" id="btn-add-item" style="padding:18px;font-size:16px;letter-spacing:0.06em">ADD TO LIST</button>'
+    +'<button id="btn-cancel-add" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;padding:8px">Cancel</button>'
+    +'</div></div></div>';
   bindPickerClicks();
   document.getElementById('btn-add-item').onclick=addItem;
   document.getElementById('btn-cancel-add').onclick=closeModal;
