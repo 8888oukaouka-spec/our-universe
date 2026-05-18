@@ -393,8 +393,9 @@ function doSignIn(){
     googleBtn.disabled=false;
   });
 }
-googleBtn.addEventListener('touchend',function(e){e.preventDefault();doSignIn();},{passive:false});
-googleBtn.addEventListener('click',function(e){if(!('ontouchstart' in window))doSignIn();});
+googleBtn.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();doSignIn();},{passive:false});
+googleBtn.addEventListener('touchstart',function(e){e.stopPropagation();},{passive:true});
+googleBtn.addEventListener('click',function(e){e.stopPropagation();if(!('ontouchstart' in window))doSignIn();});
 auth.onAuthStateChanged(function(user){
   var ls=document.getElementById('login-screen');
   if(user){
@@ -778,7 +779,8 @@ function makeDraggable(el,obj){
   }
   el.addEventListener('mousedown',onStart);el.addEventListener('touchstart',onStart,{passive:false});
   window.addEventListener('mousemove',onMove);window.addEventListener('touchmove',onMove,{passive:false});
-  window.addEventListener('mouseup',onEnd);window.addEventListener('touchend',onEnd);
+  window.addEventListener('mouseup',function(e){if(moving)onEnd(e);});
+  window.addEventListener('touchend',function(e){if(moving)onEnd(e);},{passive:false});
 }
 
 // TOOL BUTTONS
