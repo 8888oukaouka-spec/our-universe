@@ -560,7 +560,7 @@ function itemHTML(item){
   h+='<div class="item'+(item.done?' done':'')+'" id="item-'+item.id+'">';
   // checkbox
   h+='<div class="checkbox'+(item.done?' checked':'')+'" data-check="'+item.id+'">';
-  if(item.done)h+='<span class="material-symbols-outlined" style="font-size:18px;color:#9492ff;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;pointer-events:none">check</span>';
+  if(item.done)h+='<span class="material-symbols-outlined" style="font-size:18px;color:#9492ff;font-variation-settings:' + "'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24" + ';pointer-events:none">check</span>';
   h+='</div>';
   // body
   h+='<div class="item-body">';
