@@ -380,20 +380,6 @@ for(var i=0;i<60;i++){var s=document.createElement('div');s.className='star';var
 
 // AUTH
 var googleBtn=document.getElementById('google-btn');
-var provider=new firebase.auth.GoogleAuthProvider();
-provider.setCustomParameters({prompt:'select_account'});
-
-// Handle redirect result first (returning from Google sign-in)
-auth.getRedirectResult().then(function(result){
-  if(result&&result.user){
-    // handled by onAuthStateChanged below
-  }
-}).catch(function(err){
-  if(err.code!=='auth/no-current-user'){
-    document.getElementById('login-error').style.display='block';
-    document.getElementById('login-error').textContent='Sign in failed: '+err.message;
-  }
-});
 
 auth.onAuthStateChanged(function(user){
   var ls=document.getElementById('login-screen');
@@ -419,7 +405,14 @@ googleBtn.addEventListener('click',function(){
   document.getElementById('login-loading').style.display='block';
   document.getElementById('login-error').style.display='none';
   googleBtn.disabled=true;
-  auth.signInWithRedirect(provider);
+  var provider=new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({prompt:'select_account'});
+  auth.signInWithPopup(provider).catch(function(err){
+    document.getElementById('login-loading').style.display='none';
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('login-error').textContent='Sign in failed: '+err.message;
+    googleBtn.disabled=false;
+  });
 });
 
 // DATA
